@@ -1,4 +1,5 @@
 /*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, noarg:true, noempty:true, nonew:true, undef:true, unused:true, strict:true, browser:true */
+/*global JSTB */
 
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of DotClear.
@@ -24,10 +25,9 @@
 
 /* Modified for markdown formatting */
 /* 2013-10-10 Matteo 'Peach' Pescarin - refactored code as modular */
+JSTB.namespace('lang.markdown');
 
-var JSTB = JSTB || {};
-
-JSTB.markdown = (function () {
+JSTB.lang.markdown = (function () {
     'use strict';
     var elements = {},
         // style selection

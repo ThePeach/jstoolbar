@@ -1,4 +1,4 @@
-/*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, noarg:true, noempty:true, nonew:true, undef:true, unused:true, strict:true, browser:true */
+/*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, noarg:true, noempty:true, nonew:true, undef:true, unused:true, strict:true, browser:true, laxbreak:true */
 
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of DotClear.
@@ -31,17 +31,19 @@ JSTB.components = (function () {
     var defaultClass = 'jstoolbar',
         defaultMode = 'wiki', // WTF naming
         // default toolbar buttons order
-        defaultToolbarElements = [ 'strong', 'em', 'space', 'br', 'h1', 'h2', 'h3', 'space', 'ul', 'ol', 'bq', 'unbq', 'pre', 'space', 'link', 'email', 'styles' ];
+        defaultToolbarElements = [ 'strong', 'em', 'space', 'br', 'h1', 'h2', 'h3', 'space', 'ul', 'ol', 'bq', 'unbq', 'pre', 'space', 'link', 'email', 'styles' ],
+        defaultLang = 'markdown';
 
     /**
      * Constructor for the JsToolbar
      *
      * @param {Object} textarea        the textarea the jsToolbar should be applied to
      * @param {Array}  toolbarElements the elements used in the toolbar
+     * @param {String} lang            the language to use, defaults to 'markdown'
      * @returns {null}
      * @constructor
      */
-    var JsToolbar = function (textarea, toolbarElements) {
+    var JsToolbar = function (textarea, toolbarElements, lang) {
         if (!textarea || typeof document.createElement === "undefined" || (typeof document.selection === "undefined" && typeof textarea.setSelectionRange === "undefined") ) {
             throw new Error('Unable to initialise the toolbar');
         }
@@ -52,9 +54,16 @@ JSTB.components = (function () {
         this.textarea = textarea || null;
         // toolbarElements to create
         this.toolbarElements = toolbarElements || defaultToolbarElements;
+        // language to be used
         this.context = null;
         // this object will be filled with shortcuts to the corresponding DOM elements tools.
+        // FIXME not used anywhere
         this.toolNodes = {};
+
+        // element definitions for the chosen language
+        if (typeof JSTB.lang[lang].elements !== "undefined") {
+            this.lang = JSTB.lang[lang].elements;
+        }
 
         this.editor = document.createElement('div');
         this.editor.className = 'jstEditor';
@@ -84,6 +93,8 @@ JSTB.components = (function () {
 
             this.editor.parentNode.insertBefore(this.handle, this.editor.nextSibling);
         }
+
+        this.draw();
     };
 
     JsToolbar.prototype = (function () {
@@ -108,36 +119,55 @@ JSTB.components = (function () {
             this.mode = mode || defaultMode;
         }
 
-        function draw() {
-            if (!this.scope) {
-                return null;
-            }
+        /**
+         * The draw function acts as an initialisation function that acts on the DOM
+         *
+         * @param {String} [mode] the mode, defaults to wiki, optional.
+         */
+        function draw(mode) {
+            var i, b, tool, newTool;
 
-            var button = document.createElement('button');
-            button.setAttribute('type','button');
-            button.tabIndex = 200;
-            if (this.className) {
-                button.className = this.className;
-            }
-            button.title = this.title;
-            var span = document.createElement('span');
-            span.appendChild(document.createTextNode(this.title));
-            button.appendChild(span);
+            this.setMode(mode);
 
-            if (this.icon !== undefined) {
-                button.style.backgroundImage = 'url('+this.icon+')';
+            // Empty toolbar
+            while (this.toolbar.hasChildNodes()) {
+                this.toolbar.removeChild(this.toolbar.firstChild);
             }
-            if (typeof(this.fn) === 'function') {
-                var This = this;
-                button.onclick = function() { try { This.fn.apply(This.scope, arguments) } catch (e) {} return false; };
+            // empty DOM shortcuts
+            // FIXME not used anywhere
+            this.toolNodes = {};
+
+            // Draw toolbar elements
+            for (i=0; i < this.toolbarElements.length; i++) {
+                b = this.lang.elements[this.toolbarElements[i]];
+
+                var disabled =
+                        typeof b.type === 'undefined'
+                        || b.type === ''
+                        || (typeof b.disabled !== 'undefined' && b.disabled)
+                        || (typeof b.context !== 'undefined' && b.context !== null && b.context !== this.context);
+
+                if (!disabled && typeof this[b.type] === 'function') {
+                    tool = this[b.type](this.toolbarElements[i]); // get the right constructor for the toolbar element
+                    if (tool) {
+                        newTool = tool.draw();
+                    }
+
+                    if (newTool) {
+                        // record the DOM shortcut access for later use
+                        // FIXME not used anywhere
+                        this.toolNodes[this.toolbarElements[i]] = newTool;
+                        this.toolbar.appendChild(newTool);
+                    }
+                }
             }
-            return button;
         }
 
         // expose needed things
         return {
             setMode: setMode,
             getMode: getMode,
+            draw: draw,
             button: button,
             spacer: spacer,
             combo: combo
@@ -315,7 +345,7 @@ JSTB.components = (function () {
             i;
 
         if (pos === 0 || pos === content.length || prevCharIsNewLine) {
-            this.textarea.focus();
+            textarea.focus();
             return;
         }
 
@@ -336,8 +366,8 @@ JSTB.components = (function () {
             }
         }
 
-        this.textarea.value = content.substring(0, endPos || pos) + char + content.substring(startPos || pos);
-        this.textarea.focus();
+        textarea.value = content.substring(0, endPos || pos) + char + content.substring(startPos || pos);
+        textarea.focus();
     }
 
     /**
