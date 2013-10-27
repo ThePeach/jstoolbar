@@ -23,7 +23,358 @@
 */
 /* Modified by JP LANG for textile formatting */
 
-var JSTOOLBAR = JSTOOLBAR || {};
+var JSTB = JSTB || {};
+
+JSTB.components = (function () {
+    'use strict';
+
+    var defaultClass = 'jstoolbar',
+        defaultMode = 'wiki', // WTF naming
+        // default toolbar buttons order
+        defaultToolbarElements = [ 'strong', 'em', 'space', 'br', 'h1', 'h2', 'h3', 'space', 'ul', 'ol', 'bq', 'unbq', 'pre', 'space', 'link', 'email', 'styles' ];
+
+    /**
+     * Constructor for the JsToolbar
+     *
+     * @param {Object} textarea        the textarea the jsToolbar should be applied to
+     * @param {Array}  toolbarElements the elements used in the toolbar
+     * @returns {null}
+     * @constructor
+     */
+    var JsToolbar = function (textarea, toolbarElements) {
+        if (!textarea || typeof document.createElement === "undefined" || (typeof document.selection === "undefined" && typeof textarea.setSelectionRange === "undefined") ) {
+            throw new Error('Unable to initialise the toolbar');
+        }
+
+        // the toolbar mode TODO useless? then get rid of this!
+        this.mode = null;
+        // the textarea the jstoolbar should be attached to
+        this.textarea = textarea || null;
+        // toolbarElements to create
+        this.toolbarElements = toolbarElements || defaultToolbarElements;
+        this.context = null;
+        // this object will be filled with shortcuts to the corresponding DOM elements tools.
+        this.toolNodes = {};
+
+        this.editor = document.createElement('div');
+        this.editor.className = 'jstEditor';
+
+        this.textarea.parentNode.insertBefore(this.editor, this.textarea);
+        this.editor.appendChild(this.textarea);
+
+        this.toolbar = document.createElement("div");
+        this.toolbar.className = 'jstElements';
+        this.editor.parentNode.insertBefore(this.toolbar, this.editor);
+
+        // Draggable resizing
+        // TODO rewrite this crap
+        if (this.editor.addEventListener && navigator.appVersion.match(/\bMSIE\b/)) {
+            this.handle = document.createElement('div');
+            this.handle.className = 'jstHandle';
+            var dragStart = this.resizeDragStart;
+            var This = this;
+            this.handle.addEventListener('mousedown', function (event) {
+                dragStart.call(This, event);
+            }, false);
+            // fix memory leak in Firefox (bug #241518)
+            window.addEventListener('unload', function () {
+                var del = This.handle.parentNode.removeChild(This.handle);
+                delete(This.handle);
+            }, false);
+
+            this.editor.parentNode.insertBefore(this.handle, this.editor.nextSibling);
+        }
+    };
+
+    JsToolbar.prototype = (function () {
+        /*jshint validthis:true */
+        var button = (function () {
+
+        })();
+
+        var spacer = (function () {
+
+        })();
+
+        var combo = (function () {
+
+        })();
+
+        function getMode() {
+            return this.mode;
+        }
+
+        function setMode(mode) {
+            this.mode = mode || defaultMode;
+        }
+
+        function draw() {
+            if (!this.scope) {
+                return null;
+            }
+
+            var button = document.createElement('button');
+            button.setAttribute('type','button');
+            button.tabIndex = 200;
+            if (this.className) {
+                button.className = this.className;
+            }
+            button.title = this.title;
+            var span = document.createElement('span');
+            span.appendChild(document.createTextNode(this.title));
+            button.appendChild(span);
+
+            if (this.icon !== undefined) {
+                button.style.backgroundImage = 'url('+this.icon+')';
+            }
+            if (typeof(this.fn) === 'function') {
+                var This = this;
+                button.onclick = function() { try { This.fn.apply(This.scope, arguments) } catch (e) {} return false; };
+            }
+            return button;
+        }
+
+        // expose needed things
+        return {
+            setMode: setMode,
+            getMode: getMode,
+            button: button,
+            spacer: spacer,
+            combo: combo
+        };
+    })();
+
+    // generic internal methods
+    /**
+     * @param {String} startTag
+     * @param {String} endTag
+     */
+    function singleTag(startTag, endTag) {
+        startTag = startTag || null;
+        endTag = endTag || startTag;
+
+        if (!startTag || !endTag) {
+            return;
+        }
+
+        encloseSelection(startTag, endTag);
+    }
+
+    /**
+     * Encloses a line within a prefix and suffix.
+     *
+     * @param {String} prefix the prefix
+     * @param {String} suffix the suffix
+     * @param {Object} [fn]   a callback function
+     */
+    function encloseLineSelection(prefix, suffix, fn) {
+        var start, end, sel, scrollPos, subst, res;
+
+        prefix = prefix || '';
+        suffix = suffix || '';
+
+        this.textarea.focus();
+
+        if (typeof document.selection !== "undefined") {
+            sel = document.selection.createRange().text;
+        }
+        else if (typeof this.textarea.setSelectionRange !== "undefined") {
+            start = this.textarea.selectionStart;
+            end = this.textarea.selectionEnd;
+            scrollPos = this.textarea.scrollTop;
+            // go to the start of the line
+            start = this.textarea.value.substring(0, start).replace(/[^\r\n]*$/g,'').length;
+            // go to the end of the line
+            end = this.textarea.value.length - this.textarea.value.substring(end, this.textarea.value.length).replace(/^[^\r\n]*/, '').length;
+            sel = this.textarea.value.substring(start, end);
+        }
+
+        if (sel.match(/ $/)) { // exclude ending space char, if any
+            sel = sel.substring(0, sel.length - 1);
+            suffix = suffix + " ";
+        }
+
+        if (typeof fn  === 'function') {
+            res = (sel) ? fn.call(this,sel) : fn('');
+        }
+        else {
+            res = (sel) ? sel : '';
+        }
+
+        subst = prefix + res + suffix;
+
+        if (typeof document.selection !== "undefined") {
+            document.selection.createRange().text = subst;
+            var range = this.textarea.createTextRange();
+            range.collapse(false);
+            range.move('character', -suffix.length);
+            range.select();
+        }
+        else if (typeof this.textarea.setSelectionRange !== "undefined") {
+            this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
+            if (sel) {
+                this.textarea.setSelectionRange(start + subst.length, start + subst.length);
+            } else {
+                this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);
+            }
+
+            this.textarea.scrollTop = scrollPos;
+        }
+    }
+
+    /**
+     * Encloses a selection within a given prefix and suffix
+     * TODO merge this function with encloseLineSelection
+     * @param {String} prefix
+     * @param {String} suffix
+     * @param {Function} fn a callback function
+     */
+    function encloseSelection(prefix, suffix, fn) {
+        var start, end, sel, scrollPos, subst, res;
+
+        prefix = prefix || '';
+        suffix = suffix || '';
+
+        this.textarea.focus();
+
+        if (typeof document.selection !== "undefined") {
+            sel = document.selection.createRange().text;
+        }
+        else if (typeof this.textarea.setSelectionRange !== "undefined") {
+            start = this.textarea.selectionStart;
+            end = this.textarea.selectionEnd;
+            scrollPos = this.textarea.scrollTop;
+            sel = this.textarea.value.substring(start, end);
+        }
+
+        if (sel.match(/ $/)) { // exclude ending space char, if any
+            sel = sel.substring(0, sel.length - 1);
+            suffix = suffix + " ";
+        }
+
+        if (typeof fn === 'function') {
+            res = (sel) ? fn.call(this,sel) : fn('');
+        }
+        else {
+            res = (sel) ? sel : '';
+        }
+
+        subst = prefix + res + suffix;
+
+        if (typeof document.selection !== "undefined") {
+            document.selection.createRange().text = subst;
+            var range = this.textarea.createTextRange();
+            range.collapse(false);
+            range.move('character', -suffix.length);
+            range.select();
+//			this.textarea.caretPos -= suffix.length;
+        }
+        else if (typeof this.textarea.setSelectionRange !== "undefined") {
+            this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
+            if (sel) {
+                this.textarea.setSelectionRange(start + subst.length, start + subst.length);
+            }
+            else {
+                this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);
+            }
+
+            this.textarea.scrollTop = scrollPos;
+        }
+    }
+
+    /**
+     * Strips the base url from a given string
+     *
+     * @param {String} url the url to strip
+     * @returns {String}
+     */
+    function stripBaseURL(url) {
+        if (this.base_url !== '') {
+            var pos = url.indexOf(this.base_url);
+            if (pos === 0) {
+                url = url.substr(this.base_url.length);
+            }
+        }
+
+        return url;
+    }
+
+    /**
+     * inserts a single character at the current position and removes blank spaces before and after
+     *
+     * @param {String} char     the character to insert
+     * @param {Object} textarea the textarea to get the information from
+     */
+    function singleCharacter(char, textarea) {
+        var pos = getCaretPosition(textarea),
+            content = textarea.value,
+            nextCharIsSpace = content.charAt(pos).match(/\s/),
+            prevCharIsSpace = content.charAt(pos-1).match(/\s/),
+            prevCharIsNewLine = content.charAt(pos-1).match(/\n/),
+            endPos = null, startPos = null,
+            i;
+
+        if (pos === 0 || pos === content.length || prevCharIsNewLine) {
+            this.textarea.focus();
+            return;
+        }
+
+        // find the next non-space character
+        if (nextCharIsSpace) {
+            for (i=pos+1; i<content.length && startPos === null; i+=1) {
+                if (content.charAt(i).match(/\s/) === null) {
+                    startPos = i;
+                }
+            }
+        }
+        // find the previous non-space character
+        if (prevCharIsSpace) {
+            for (i=pos-1; i>=0 && endPos === null; i-=1) {
+                if (content.charAt(i).match(/\s/) === null) {
+                    endPos = i+1;
+                }
+            }
+        }
+
+        this.textarea.value = content.substring(0, endPos || pos) + char + content.substring(startPos || pos);
+        this.textarea.focus();
+    }
+
+    /**
+     * Return the position of the caret within a text
+     *
+     * @param {Object} el the element
+     * @returns {Number}
+     */
+    function getCaretPosition(el) {
+        if (el.selectionStart) {
+            return el.selectionStart;
+        }
+
+        else if (document.selection) {
+            el.focus();
+
+            var r = document.selection.createRange(),
+                re = el.createTextRange(),
+                rc = re.duplicate();
+
+            if (r === null) {
+                return 0;
+            }
+
+            re.moveToBookmark(r.getBookmark());
+            rc.setEndPoint('EndToStart', re);
+
+            return rc.text.length;
+        }
+        return 0;
+    }
+
+    // expose methods/objects
+    return {
+        JsToolbar: JsToolbar
+    };
+})();
 
 function jsToolBar(textarea, toolbarElements) {
     'use strict';
@@ -196,7 +547,7 @@ jsToolBar.prototype = {
 	},
 
 	button: function(toolName) {
-		var tool = JSTOOLBAR.markdown.elements[toolName];
+		var tool = JSTB.markdown.elements[toolName];
 		if (typeof tool.fn[this.mode] !== 'function') {
             return null;
         }
@@ -217,7 +568,7 @@ jsToolBar.prototype = {
 	combo: function(toolName) {
         'use strict';
 
-		var tool = JSTOOLBAR.markdown.elements[toolName],
+		var tool = JSTB.markdown.elements[toolName],
             list = tool[this.mode].list,
             options = {},
             i, opt;
@@ -247,7 +598,7 @@ jsToolBar.prototype = {
 		var i, b, tool, newTool;
 
 		for (i=0; i < this.toolbarElements.length; i++) {
-			b = JSTOOLBAR.markdown.elements[this.toolbarElements[i]];
+			b = JSTB.markdown.elements[this.toolbarElements[i]];
 
 			var disabled =
                 typeof b.type === 'undefined'

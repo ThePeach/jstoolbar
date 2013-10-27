@@ -1,3 +1,5 @@
+/*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, noarg:true, noempty:true, nonew:true, undef:true, unused:true, strict:true, browser:true */
+
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of DotClear.
  * Copyright (c) 2005 Nicolas Martin & Olivier Meunier and contributors. All
@@ -23,9 +25,9 @@
 /* Modified for markdown formatting */
 /* 2013-10-10 Matteo 'Peach' Pescarin - refactored code as modular */
 
-var JSTOOLBAR = JSTOOLBAR || {};
+var JSTB = JSTB || {};
 
-JSTOOLBAR.markdown = (function () {
+JSTB.markdown = (function () {
     'use strict';
     var elements = {},
         // style selection
