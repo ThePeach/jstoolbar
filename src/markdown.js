@@ -1,30 +1,18 @@
 /*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, noarg:true, noempty:true, nonew:true, undef:true, unused:true, strict:true, browser:true */
 /*global JSTB */
 
-/* ***** BEGIN LICENSE BLOCK *****
- * This file is part of DotClear.
+/**
+ * @projectDescription  This library contains the definitions for markdown formatting.
+ *
+ * First version taken from DotClear, published under the GPLv2.
  * Copyright (c) 2005 Nicolas Martin & Olivier Meunier and contributors. All
  * rights reserved.
+ * Modified by JP LANG for textile formatting.
+ * Entirely rewritten and refactored by Matteo 'Peach' Pescarin.
  *
- * DotClear is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * DotClear is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with DotClear; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * ***** END LICENSE BLOCK *****
-*/
+ * @version 0.1
+ */
 
-/* Modified for markdown formatting */
-/* 2013-10-10 Matteo 'Peach' Pescarin - refactored code as modular */
 JSTB.namespace('lang.markdown');
 
 JSTB.lang.markdown = (function () {

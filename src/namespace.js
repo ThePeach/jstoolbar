@@ -1,4 +1,14 @@
 /*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, noarg:true, noempty:true, nonew:true, undef:true, strict:true, browser:true */
+
+/**
+ * @projectDescription  This library contains the definition for the namespace.
+ *
+ * Version taken from Stoyan Stefanov - Javascript Patterns.
+ * Published under the GPLv2.
+ *
+ * @version 0.1
+ */
+
 /**
  * create default namespace
  * @type {*|{}}
