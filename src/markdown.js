@@ -26,7 +26,7 @@ JSTB.lang.markdown = (function () {
 
     // space
     elements.space = {
-        type: 'space'
+        type: 'spacer'
     };
     // br
     elements.br = {

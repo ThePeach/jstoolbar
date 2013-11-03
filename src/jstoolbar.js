@@ -66,9 +66,13 @@ JSTB.components = (function () {
         // help link
         this.helpLink = '';
 
+        if (typeof lang === "undefined") {
+            lang = defaultLang;
+        }
+
         // element definitions for the chosen language
         if (typeof JSTB.lang[lang].elements !== "undefined") {
-            this.lang = JSTB.lang[lang].elements;
+            this.lang.elements = JSTB.lang[lang].elements;
         }
 
         this.editor = document.createElement('div');
@@ -79,7 +83,7 @@ JSTB.components = (function () {
 
         /** @var {Object} the toolbar containing all buttons */
         this.toolbar = document.createElement("div");
-        this.toolbar.className = 'jstElements';
+        this.toolbar.className = defaultClass;
         this.editor.parentNode.insertBefore(this.toolbar, this.editor);
 
         // Draggable resizing
@@ -104,35 +108,162 @@ JSTB.components = (function () {
         this.draw();
     };
 
-    JsToolbar.prototype = (function () {
-        /*jshint validthis:true */
-        /**
-         *
-         * @param {String} toolName
-         * @returns {*}
-         */
-        var button = function (toolName) {
-            var tool = JSTB.markdown.elements[toolName],
-                mode = this.getMode(),
-                b;
-            // no action defined for the button
-            if (typeof tool.fn[mode] !== 'function') {
-                return null;
+    var Spacer = function (element) {
+        this.width = element.width;
+    };
+
+    Spacer.prototype.draw = function () {
+        var span = document.createElement('span');
+//        if (this.id) {
+//            span.id = this.id;
+//        }
+        span.appendChild(document.createTextNode(String.fromCharCode(160)));
+        span.className = 'jstb-button--spacer';
+        if (this.width) {
+            span.style.marginRight = this.width+'px';
+        }
+
+        return span;
+    };
+
+    var Button = function (element) {
+        var mode = this.getMode();
+
+        this.title = JSTB.strings[title] || element.title || null;
+        this.fn = element.fn[mode] || function(){};
+//        this.scope = scope || null;
+        this.className = element.className || 'jstb-button--button';
+
+        // no action defined for the button
+        if (typeof this.fn !== "function") {
+            this.disabled = true;
+        }
+        if (typeof element.icon !== 'undefined') {
+            this.icon = element.icon;
+        }
+    };
+
+
+    Button.prototype.draw = function () {
+//        if (!this.scope) {
+//            return null;
+//        }
+
+        var button = document.createElement('button'),
+            span = document.createElement('span');
+
+        span.appendChild(document.createTextNode(this.title));
+
+        button.setAttribute('type','button');
+        button.tabIndex = 200;
+        if (this.className) {
+            button.className = this.className;
+        }
+        button.title = this.title;
+        button.appendChild(span);
+
+        if (typeof this.icon !== "undefined") {
+            button.style.backgroundImage = 'url('+this.icon+')';
+        }
+
+        if (typeof this.fn === 'function') {
+            var context = this;
+            button.onclick = function() {
+                try {
+                    context.fn.apply(context.scope, arguments);
+                }
+                catch (e) {
+                }
+                return false;
+            };
+        }
+
+        return button;
+    };
+
+    var Combo = function (element) {
+
+        var mode = this.getMode(),
+            list = element[mode].list,
+            i;
+
+        this.options = {};
+        this.disabled = false;
+
+        if (typeof element[mode].fn !== 'function' || list.length === 0) {
+            this.disabled = true;
+            this.fn = element[mode].fn || function(){};
+        }
+        else {
+            for (i=0; i < list.length; i++) {
+                this.options[list[i]] = element.options[list[i]];
             }
-            b = new jsButton(tool.title, tool.fn[mode], this, 'jstb_'+toolName);
-            if (typeof tool.icon !== 'undefined') {
-                b.icon = tool.icon;
+        }
+
+        this.title = element.title || null;
+//        this.scope = scope || null;
+        this.className = element.className || null;
+    };
+
+
+    Combo.prototype.draw = function() {
+//        if (!this.scope || !this.options) {
+        if (!this.options) {
+            return null;
+        }
+
+        var select = document.createElement('select'),
+            context = this;
+
+        if (this.className) {
+            select.className = this.className;
+        }
+        select.title = this.title;
+
+        for (var o in this.options) {
+            if (this.options.hasOwnProperty(o)) {
+                //var opt = this.options[o];
+                var option = document.createElement('option');
+                option.value = o;
+                option.appendChild(document.createTextNode(this.options[o]));
+                select.appendChild(option);
             }
-            return b;
+        }
+
+        select.onchange = function() {
+            try {
+                context.fn.call(context.scope, this.value);
+            }
+            catch (e) {
+                window.alert(e);
+            }
+
+            return false;
         };
 
-        var spacer = (function () {
+        return select;
+    };
 
-        })();
+    JsToolbar.prototype = (function () {
+        /*jshint validthis:true */
 
-        var combo = (function () {
+        /**
+         * Factory for buttons to be drawn in the toolbar
+         *
+         * @param {String} buttonType the button type, either one of spacer|button|combo
+         * @param {String} element    the element definition
+         * @return {Object}
+         */
+        function drawButton(buttonType, element) {
+            var constr = buttonType,
+                tool;
 
-        })();
+            if (typeof JSTB.components[constr] !== "function") {
+                throw new Error('Unable to find the definition of '+constr);
+            }
+
+            return new JSTB.components[constr](element);
+        }
 
         /**
          * getter for the mode
@@ -192,6 +323,7 @@ JSTB.components = (function () {
 
             // Draw toolbar elements
             for (i=0; i < this.toolbarElements.length; i++) {
+                // picks the definition of the element for the current language
                 b = this.lang.elements[this.toolbarElements[i]];
 
                 var disabled =
@@ -201,7 +333,10 @@ JSTB.components = (function () {
                         || (typeof b.context !== 'undefined' && b.context !== null && b.context !== this.context);
 
                 if (!disabled && typeof this[b.type] === 'function') {
-                    tool = this[b.type](this.toolbarElements[i]); // get the right constructor for the toolbar element
+//                    tool = this[b.type](this.toolbarElements[i]); // get the right constructor for the toolbar element
+                    // get the right constructor for the toolbar element
+                    tool = drawButton(b.type, this.toolbarElements[i]);
+
                     if (tool) {
                         newTool = tool.draw();
                     }
@@ -221,9 +356,10 @@ JSTB.components = (function () {
             setMode: setMode,
             getMode: getMode,
             draw: draw,
-            button: button,
-            spacer: spacer,
-            combo: combo
+            drawButton: drawButton,
+            Button: Button,
+            Spacer: Spacer,
+            Combo: Combo
         };
     })();
 
@@ -463,140 +599,6 @@ JSTB.components = (function () {
     };
 })();
 
-function jsButton(title, fn, scope, className) {
-    if (typeof jsToolBar.strings === 'undefined') {
-      this.title = title || null;
-    } else {
-      this.title = jsToolBar.strings[title] || title || null;
-    }
-	this.fn = fn || function(){};
-	this.scope = scope || null;
-	this.className = className || null;
-}
-jsButton.prototype.draw = function() {
-	if (!this.scope) {
-        return null;
-    }
-
-	var button = document.createElement('button');
-	button.setAttribute('type','button');
-	button.tabIndex = 200;
-	if (this.className) {
-        button.className = this.className;
-    }
-	button.title = this.title;
-	var span = document.createElement('span');
-	span.appendChild(document.createTextNode(this.title));
-	button.appendChild(span);
-
-	if (this.icon !== undefined) {
-		button.style.backgroundImage = 'url('+this.icon+')';
-	}
-	if (typeof(this.fn) === 'function') {
-		var This = this;
-		button.onclick = function() { try { This.fn.apply(This.scope, arguments) } catch (e) {} return false; };
-	}
-	return button;
-};
-function jsSpace(id) {
-    'use strict';
-
-	this.id = id || null;
-	this.width = null;
-}
-jsSpace.prototype.draw = function() {
-	var span = document.createElement('span');
-	if (this.id) {
-        span.id = this.id;
-    }
-	span.appendChild(document.createTextNode(String.fromCharCode(160)));
-	span.className = 'jstSpacer';
-	if (this.width) {
-        span.style.marginRight = this.width+'px';
-    }
-
-	return span;
-};
-
-function jsCombo(title, options, scope, fn, className) {
-	this.title = title || null;
-	this.options = options || null;
-	this.scope = scope || null;
-	this.fn = fn || function(){};
-	this.className = className || null;
-}
-jsCombo.prototype.draw = function() {
-	if (!this.scope || !this.options) {
-        return null;
-    }
-
-	var select = document.createElement('select');
-	if (this.className) {
-        select.className = className;
-    }
-	select.title = this.title;
-
-	for (var o in this.options) {
-		//var opt = this.options[o];
-		var option = document.createElement('option');
-		option.value = o;
-		option.appendChild(document.createTextNode(this.options[o]));
-		select.appendChild(option);
-	}
-
-	var This = this;
-	select.onchange = function() {
-		try {
-			This.fn.call(This.scope, this.value);
-		} catch (e) { alert(e); }
-
-		return false;
-	};
-
-	return select;
-};
-
-
-jsToolBar.prototype = {
-
-	button: function(toolName) {
-		var tool = JSTB.markdown.elements[toolName];
-		if (typeof tool.fn[this.mode] !== 'function') {
-            return null;
-        }
-		var b = new jsButton(tool.title, tool.fn[this.mode], this, 'jstb_'+toolName);
-		if (tool.icon !== undefined) {
-            b.icon = tool.icon;
-        }
-		return b;
-	},
-	space: function(toolName) {
-        'use strict';
-		var tool = new jsSpace(toolName);
-		if (typeof this.elements[toolName] !== 'undefined') {
-            tool.width = this.elements[toolName].width;
-        }
-		return tool;
-	},
-	combo: function(toolName) {
-        'use strict';
-
-		var tool = JSTB.markdown.elements[toolName],
-            list = tool[this.mode].list,
-            options = {},
-            i, opt;
-
-		if (typeof tool[this.mode].fn !== 'function' || list.length === 0) {
-			return null;
-		} else {
-			for (i=0; i < list.length; i++) {
-				opt = list[i];
-				options[opt] = tool.options[opt];
-			}
-			return new jsCombo(tool.title, options, this, tool[this.mode].fn);
-		}
-	}
-};
 
 /** Resizer
  * TODO move into main prototype definition
