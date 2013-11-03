@@ -1,16 +1,20 @@
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = 'Krepko';
-jsToolBar.strings['Italic'] = 'Poševno';
-jsToolBar.strings['Underline'] = 'Podčrtano';
-jsToolBar.strings['Deleted'] = 'Izbrisano';
-jsToolBar.strings['Code'] = 'Koda med vrsticami';
-jsToolBar.strings['Heading 1'] = 'Naslov 1';
-jsToolBar.strings['Heading 2'] = 'Naslov 2';
-jsToolBar.strings['Heading 3'] = 'Naslov 3';
-jsToolBar.strings['Unordered list'] = 'Neurejen seznam';
-jsToolBar.strings['Ordered list'] = 'Urejen seznam';
-jsToolBar.strings['Quote'] = 'Citat';
-jsToolBar.strings['Unquote'] = 'Odstrani citat';
-jsToolBar.strings['Preformatted text'] = 'Predoblikovano besedilo';
-jsToolBar.strings['Wiki link'] = 'Povezava na Wiki stran';
-jsToolBar.strings['Image'] = 'Slika';
+/*global JSTB */
+JSTB.namespace('strings.sl');
+
+JSTB.strings.sl = {
+    'Strong': 'Krepko',
+    'Italic': 'Poševno',
+    'Underline': 'Podčrtano',
+    'Deleted': 'Izbrisano',
+    'Code': 'Koda med vrsticami',
+    'Heading 1': 'Naslov 1',
+    'Heading 2': 'Naslov 2',
+    'Heading 3': 'Naslov 3',
+    'Unordered list': 'Neurejen seznam',
+    'Ordered list': 'Urejen seznam',
+    'Quote': 'Citat',
+    'Unquote': 'Odstrani citat',
+    'Preformatted text': 'Predoblikovano besedilo',
+    'Wiki link': 'Povezava na Wiki stran',
+    'Image': 'Slika'
+};

@@ -1,16 +1,20 @@
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = '強調';
-jsToolBar.strings['Italic'] = '斜体';
-jsToolBar.strings['Underline'] = '下線';
-jsToolBar.strings['Deleted'] = '取り消し線';
-jsToolBar.strings['Code'] = 'コード';
-jsToolBar.strings['Heading 1'] = '見出し 1';
-jsToolBar.strings['Heading 2'] = '見出し 2';
-jsToolBar.strings['Heading 3'] = '見出し 3';
-jsToolBar.strings['Unordered list'] = '順不同リスト';
-jsToolBar.strings['Ordered list'] = '番号つきリスト';
-jsToolBar.strings['Quote'] = '引用';
-jsToolBar.strings['Unquote'] = '引用解除';
-jsToolBar.strings['Preformatted text'] = '整形済みテキスト';
-jsToolBar.strings['Wiki link'] = 'Wikiページへのリンク';
-jsToolBar.strings['Image'] = '画像';
+/*global JSTB */
+JSTB.namespace('strings.ja');
+
+JSTB.strings.ja = {
+    'Strong': '強調',
+    'Italic': '斜体',
+    'Underline': '下線',
+    'Deleted': '取り消し線',
+    'Code': 'コード',
+    'Heading 1': '見出し 1',
+    'Heading 2': '見出し 2',
+    'Heading 3': '見出し 3',
+    'Unordered list': '順不同リスト',
+    'Ordered list': '番号つきリスト',
+    'Quote': '引用',
+    'Unquote': '引用解除',
+    'Preformatted text': '整形済みテキスト',
+    'Wiki link': 'Wikiページへのリンク',
+    'Image': '画像'
+};

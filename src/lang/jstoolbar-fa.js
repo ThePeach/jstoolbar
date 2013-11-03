@@ -1,16 +1,20 @@
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = 'پررنگ';
-jsToolBar.strings['Italic'] = 'کج';
-jsToolBar.strings['Underline'] = 'زیرخط';
-jsToolBar.strings['Deleted'] = 'برداشته شده';
-jsToolBar.strings['Code'] = 'کد درون خطی';
-jsToolBar.strings['Heading 1'] = 'سربرگ ۱';
-jsToolBar.strings['Heading 2'] = 'سربرگ ۲';
-jsToolBar.strings['Heading 3'] = 'سربرگ ۳';
-jsToolBar.strings['Unordered list'] = 'فهرست بدون شماره';
-jsToolBar.strings['Ordered list'] = 'فهرست با شماره';
-jsToolBar.strings['Quote'] = 'تو بردن';
-jsToolBar.strings['Unquote'] = 'بیرون آوردن';
-jsToolBar.strings['Preformatted text'] = 'نوشته قالب بندی شده';
-jsToolBar.strings['Wiki link'] = 'پیوند به برگ ویکی';
-jsToolBar.strings['Image'] = 'عکس';
+/*global JSTB */
+JSTB.namespace('strings.fa');
+
+JSTB.strings.fa = {
+    'Strong': 'پررنگ',
+    'Italic': 'کج',
+    'Underline': 'زیرخط',
+    'Deleted': 'برداشته شده',
+    'Code': 'کد درون خطی',
+    'Heading 1': 'سربرگ ۱',
+    'Heading 2': 'سربرگ ۲',
+    'Heading 3': 'سربرگ ۳',
+    'Unordered list': 'فهرست بدون شماره',
+    'Ordered list': 'فهرست با شماره',
+    'Quote': 'تو بردن',
+    'Unquote': 'بیرون آوردن',
+    'Preformatted text': 'نوشته قالب بندی شده',
+    'Wiki link': 'پیوند به برگ ویکی',
+    'Image': 'عکس'
+};

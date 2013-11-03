@@ -1,16 +1,20 @@
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = 'Tučné';
-jsToolBar.strings['Italic'] = 'Kurzíva';
-jsToolBar.strings['Underline'] = 'Podtržené';
-jsToolBar.strings['Deleted'] = 'Přeškrtnuté ';
-jsToolBar.strings['Code'] = 'Zobrazení kódu';
-jsToolBar.strings['Heading 1'] = 'Záhlaví 1';
-jsToolBar.strings['Heading 2'] = 'Záhlaví 2';
-jsToolBar.strings['Heading 3'] = 'Záhlaví 3';
-jsToolBar.strings['Unordered list'] = 'Seznam';
-jsToolBar.strings['Ordered list'] = 'Uspořádaný seznam';
-jsToolBar.strings['Quote'] = 'Quote';
-jsToolBar.strings['Unquote'] = 'Remove Quote';
-jsToolBar.strings['Preformatted text'] = 'Předformátovaný text';
-jsToolBar.strings['Wiki link'] = 'Vložit odkaz na Wiki stránku';
-jsToolBar.strings['Image'] = 'Vložit obrázek';
+/*global JSTB */
+JSTB.namespace('strings.cs');
+
+JSTB.strings.cs = {
+    'Strong': 'Tučné',
+    'Italic': 'Kurzíva',
+    'Underline': 'Podtržené',
+    'Deleted': 'Přeškrtnuté ',
+    'Code': 'Zobrazení kódu',
+    'Heading 1': 'Záhlaví 1',
+    'Heading 2': 'Záhlaví 2',
+    'Heading 3': 'Záhlaví 3',
+    'Unordered list': 'Seznam',
+    'Ordered list': 'Uspořádaný seznam',
+    'Quote': 'Quote',
+    'Unquote': 'Remove Quote',
+    'Preformatted text': 'Předformátovaný text',
+    'Wiki link': 'Vložit odkaz na Wiki stránku',
+    'Image': 'Vložit obrázek'
+};

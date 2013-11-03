@@ -1,17 +1,21 @@
+/*global JSTB */
 // Translated by: Pedro Araújo <phcrva19@hotmail.com>
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = 'Negrito';
-jsToolBar.strings['Italic'] = 'Itálico';
-jsToolBar.strings['Underline'] = 'Sublinhado';
-jsToolBar.strings['Deleted'] = 'Apagado';
-jsToolBar.strings['Code'] = 'Código Inline';
-jsToolBar.strings['Heading 1'] = 'Cabeçalho 1';
-jsToolBar.strings['Heading 2'] = 'Cabeçalho 2';
-jsToolBar.strings['Heading 3'] = 'Cabeçalho 3';
-jsToolBar.strings['Unordered list'] = 'Lista não ordenada';
-jsToolBar.strings['Ordered list'] = 'Lista ordenada';
-jsToolBar.strings['Quote'] = 'Citação';
-jsToolBar.strings['Unquote'] = 'Remover citação';
-jsToolBar.strings['Preformatted text'] = 'Texto pré-formatado';
-jsToolBar.strings['Wiki link'] = 'Link para uma página da Wiki';
-jsToolBar.strings['Image'] = 'Imagem';
+JSTB.namespace('strings.pt');
+
+JSTB.strings.pt = {
+    'Strong': 'Negrito',
+    'Italic': 'Itálico',
+    'Underline': 'Sublinhado',
+    'Deleted': 'Apagado',
+    'Code': 'Código Inline',
+    'Heading 1': 'Cabeçalho 1',
+    'Heading 2': 'Cabeçalho 2',
+    'Heading 3': 'Cabeçalho 3',
+    'Unordered list': 'Lista não ordenada',
+    'Ordered list': 'Lista ordenada',
+    'Quote': 'Citação',
+    'Unquote': 'Remover citação',
+    'Preformatted text': 'Texto pré-formatado',
+    'Wiki link': 'Link para uma página da Wiki',
+    'Image': 'Imagem'
+};

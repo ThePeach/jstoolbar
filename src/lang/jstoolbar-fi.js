@@ -1,16 +1,20 @@
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = 'Lihavoitu';
-jsToolBar.strings['Italic'] = 'Kursivoitu';
-jsToolBar.strings['Underline'] = 'Alleviivattu';
-jsToolBar.strings['Deleted'] = 'Yliviivattu';
-jsToolBar.strings['Code'] = 'Koodi näkymä';
-jsToolBar.strings['Heading 1'] = 'Otsikko 1';
-jsToolBar.strings['Heading 2'] = 'Otsikko 2';
-jsToolBar.strings['Heading 3'] = 'Otsikko 3';
-jsToolBar.strings['Unordered list'] = 'Järjestämätön lista';
-jsToolBar.strings['Ordered list'] = 'Järjestetty lista';
-jsToolBar.strings['Quote'] = 'Quote';
-jsToolBar.strings['Unquote'] = 'Remove Quote';
-jsToolBar.strings['Preformatted text'] = 'Ennaltamuotoiltu teksti';
-jsToolBar.strings['Wiki link'] = 'Linkki Wiki sivulle';
-jsToolBar.strings['Image'] = 'Kuva';
+/*global JSTB */
+JSTB.namespace('strings.fi');
+
+JSTB.strings.fi = {
+    'Strong': 'Lihavoitu',
+    'Italic': 'Kursivoitu',
+    'Underline': 'Alleviivattu',
+    'Deleted': 'Yliviivattu',
+    'Code': 'Koodi näkymä',
+    'Heading 1': 'Otsikko 1',
+    'Heading 2': 'Otsikko 2',
+    'Heading 3': 'Otsikko 3',
+    'Unordered list': 'Järjestämätön lista',
+    'Ordered list': 'Järjestetty lista',
+    'Quote': 'Quote',
+    'Unquote': 'Remove Quote',
+    'Preformatted text': 'Ennaltamuotoiltu teksti',
+    'Wiki link': 'Linkki Wiki sivulle',
+    'Image': 'Kuva'
+};

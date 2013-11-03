@@ -1,19 +1,22 @@
+/*global JSTB */
 // Italian translation
 // by Diego Pierotto (ita.translations@tiscali.it)
+JSTB.namespace('strings.it');
 
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = 'Grassetto';
-jsToolBar.strings['Italic'] = 'Corsivo';
-jsToolBar.strings['Underline'] = 'Sottolineato';
-jsToolBar.strings['Deleted'] = 'Barrato';
-jsToolBar.strings['Code'] = 'Codice sorgente';
-jsToolBar.strings['Heading 1'] = 'Titolo 1';
-jsToolBar.strings['Heading 2'] = 'Titolo 2';
-jsToolBar.strings['Heading 3'] = 'Titolo 3';
-jsToolBar.strings['Unordered list'] = 'Elenco puntato';
-jsToolBar.strings['Ordered list'] = 'Elenco numerato';
-jsToolBar.strings['Quote'] = 'Aumenta rientro';
-jsToolBar.strings['Unquote'] = 'Riduci rientro';
-jsToolBar.strings['Preformatted text'] = 'Testo preformattato';
-jsToolBar.strings['Wiki link'] = 'Collegamento a pagina Wiki';
-jsToolBar.strings['Image'] = 'Immagine';
+JSTB.strings.it = {
+    'Strong': 'Grassetto',
+    'Italic': 'Corsivo',
+    'Underline': 'Sottolineato',
+    'Deleted': 'Barrato',
+    'Code': 'Codice sorgente',
+    'Heading 1': 'Titolo 1',
+    'Heading 2': 'Titolo 2',
+    'Heading 3': 'Titolo 3',
+    'Unordered list': 'Elenco puntato',
+    'Ordered list': 'Elenco numerato',
+    'Quote': 'Aumenta rientro',
+    'Unquote': 'Riduci rientro',
+    'Preformatted text': 'Testo preformattato',
+    'Wiki link': 'Collegamento a pagina Wiki',
+    'Image': 'Immagine'
+};

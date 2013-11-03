@@ -1,16 +1,20 @@
-jsToolBar.strings = {};
-jsToolBar.strings['Strong'] = 'หนา';
-jsToolBar.strings['Italic'] = 'เอียง';
-jsToolBar.strings['Underline'] = 'ขีดเส้นใต้';
-jsToolBar.strings['Deleted'] = 'ขีดฆ่า';
-jsToolBar.strings['Code'] = 'โค๊ดโปรแกรม';
-jsToolBar.strings['Heading 1'] = 'หัวข้อ 1';
-jsToolBar.strings['Heading 2'] = 'หัวข้อ 2';
-jsToolBar.strings['Heading 3'] = 'หัวข้อ 3';
-jsToolBar.strings['Unordered list'] = 'รายการ';
-jsToolBar.strings['Ordered list'] = 'ลำดับเลข';
-jsToolBar.strings['Quote'] = 'Quote';
-jsToolBar.strings['Unquote'] = 'Remove Quote';
-jsToolBar.strings['Preformatted text'] = 'รูปแบบข้อความคงที่';
-jsToolBar.strings['Wiki link'] = 'เชื่อมโยงไปหน้า Wiki อื่น';
-jsToolBar.strings['Image'] = 'รูปภาพ';
+/*global JSTB */
+JSTB.namespace('strings.th');
+
+JSTB.strings.th = {
+    'Strong': 'หนา',
+    'Italic': 'เอียง',
+    'Underline': 'ขีดเส้นใต้',
+    'Deleted': 'ขีดฆ่า',
+    'Code': 'โค๊ดโปรแกรม',
+    'Heading 1': 'หัวข้อ 1',
+    'Heading 2': 'หัวข้อ 2',
+    'Heading 3': 'หัวข้อ 3',
+    'Unordered list': 'รายการ',
+    'Ordered list': 'ลำดับเลข',
+    'Quote': 'Quote',
+    'Unquote': 'Remove Quote',
+    'Preformatted text': 'รูปแบบข้อความคงที่',
+    'Wiki link': 'เชื่อมโยงไปหน้า Wiki อื่น',
+    'Image': 'รูปภาพ'
+};
