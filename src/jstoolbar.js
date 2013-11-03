@@ -43,10 +43,10 @@ JSTB.components = (function () {
     /**
      * Constructor for the JsToolbar
      *
-     * @param {Object} textarea        the textarea the jsToolbar should be applied to
-     * @param {Array}  toolbarElements the elements used in the toolbar
-     * @param {String} syntax          the syntax to use, defaults to 'markdown'
-     * @param {String} language        the language to use, defaults to 'en'
+     * @param {Object} textarea          the textarea the jsToolbar should be applied to
+     * @param {Array}  [toolbarElements] the elements used in the toolbar
+     * @param {String} [syntax]          the syntax to use, defaults to 'markdown'
+     * @param {String} [language]        the language to use, defaults to 'en'
      * @returns {null}
      * @constructor
      */
