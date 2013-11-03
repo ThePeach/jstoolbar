@@ -25,12 +25,12 @@ JSTB.lang.markdown = (function () {
         };
 
     // space
-    elements.space = {
-        type: 'spacer'
+    elements.spacer = {
+        type: 'Spacer'
     };
     // br
     elements.br = {
-        type: 'button',
+        type: 'Button',
         title: 'New line break',
         fn: {
             wiki: function () {
@@ -40,7 +40,7 @@ JSTB.lang.markdown = (function () {
     };
     // strong
     elements.strong = {
-        type: 'button',
+        type: 'Button',
         title: 'Strong',
         fn: {
             wiki: function() { this.singleTag('**'); }
@@ -48,7 +48,7 @@ JSTB.lang.markdown = (function () {
     };
     // em
     elements.em = {
-        type: 'button',
+        type: 'Button',
         title: 'Italic',
         fn: {
             wiki: function() { this.singleTag("_"); }
@@ -57,7 +57,7 @@ JSTB.lang.markdown = (function () {
 
     // h1
     elements.h1 = {
-        type: 'button',
+        type: 'Button',
         title: 'Heading 1',
         fn: {
             wiki: function() {
@@ -70,7 +70,7 @@ JSTB.lang.markdown = (function () {
     };
     // h2
     elements.h2 = {
-        type: 'button',
+        type: 'Button',
         title: 'Heading 2',
         fn: {
             wiki: function() {
@@ -83,7 +83,7 @@ JSTB.lang.markdown = (function () {
     };
     // h3
     elements.h3 = {
-        type: 'button',
+        type: 'Button',
         title: 'Heading 3',
         fn: {
             wiki: function() {
@@ -97,7 +97,7 @@ JSTB.lang.markdown = (function () {
 
     // ul
     elements.ul = {
-        type: 'button',
+        type: 'Button',
         title: 'Unordered list',
         fn: {
             wiki: function() {
@@ -110,7 +110,7 @@ JSTB.lang.markdown = (function () {
     };
     // ol
     elements.ol = {
-        type: 'button',
+        type: 'Button',
         title: 'Ordered list',
         fn: {
             wiki: function() {
@@ -123,7 +123,7 @@ JSTB.lang.markdown = (function () {
     };
     // bq
     elements.bq = {
-        type: 'button',
+        type: 'Button',
         title: 'Quote',
         fn: {
             wiki: function() {
@@ -136,7 +136,7 @@ JSTB.lang.markdown = (function () {
     };
     // unbq
     elements.unbq = {
-        type: 'button',
+        type: 'Button',
         title: 'Unquote',
         fn: {
             wiki: function() {
@@ -149,7 +149,7 @@ JSTB.lang.markdown = (function () {
     };
     // pre
     elements.pre = {
-        type: 'button',
+        type: 'Button',
         title: 'Preformatted text',
         fn: {
             wiki: function() { this.encloseLineSelection('<pre>\n', '\n</pre>'); }
@@ -157,7 +157,7 @@ JSTB.lang.markdown = (function () {
     };
     // link
     elements.link = {
-        type: 'button',
+        type: 'Button',
         title: 'Link',
         fn: {
             wiki: function() {
@@ -177,7 +177,7 @@ JSTB.lang.markdown = (function () {
     };
     // email
     elements.email = {
-        type: 'button',
+        type: 'Button',
         title: 'Email',
         fn: {
             wiki: function() {
@@ -194,7 +194,7 @@ JSTB.lang.markdown = (function () {
     };
     // styles
     elements.styles = {
-        type: 'combo',
+        type: 'Combo',
         title: 'Text style',
         options: { 0: "Style:" },
         wiki: {
@@ -223,9 +223,9 @@ JSTB.lang.markdown = (function () {
             }
         }
     };
-    // img TODO implement img button
+    // img TODO implement img Button
 //    elements.img = {
-//        type: 'button',
+//        type: 'Button',
 //        title: 'Image',
 //        fn: {
 //            wiki: function () {
@@ -233,9 +233,9 @@ JSTB.lang.markdown = (function () {
 //            }
 //        }
 //    }
-    // help TODO implement help button
+    // help TODO implement help Button
 //    elements.help = {
-//        type: 'button',
+//        type: 'Button',
 //        title: 'Help',
 //        fn: {
 //            wiki: function () {

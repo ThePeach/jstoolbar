@@ -22,6 +22,7 @@ JSTB.components = (function () {
          * @property {String}
          * */
     var defaultClass = 'jstoolbar',
+        baseClass = 'jstb',
         /**
          * I don't know what this is for. (also WTF naming)
          * @property {String}
@@ -36,18 +37,20 @@ JSTB.components = (function () {
          * The default language used for the toolbar.
          * @property {String}
          */
-        defaultLang = 'markdown';
+        defaultSyntax = 'markdown',
+        defaultLanguage = 'en';
 
     /**
      * Constructor for the JsToolbar
      *
      * @param {Object} textarea        the textarea the jsToolbar should be applied to
      * @param {Array}  toolbarElements the elements used in the toolbar
-     * @param {String} lang            the language to use, defaults to 'markdown'
+     * @param {String} syntax          the syntax to use, defaults to 'markdown'
+     * @param {String} language        the language to use, defaults to 'en'
      * @returns {null}
      * @constructor
      */
-    var JsToolbar = function (textarea, toolbarElements, lang) {
+    var JsToolbar = function (textarea, toolbarElements, syntax, language) {
         if (!textarea || typeof document.createElement === "undefined" || (typeof document.selection === "undefined" && typeof textarea.setSelectionRange === "undefined") ) {
             throw new Error('Unable to initialise the toolbar');
         }
@@ -66,13 +69,16 @@ JSTB.components = (function () {
         // help link
         this.helpLink = '';
 
-        if (typeof lang === "undefined") {
-            lang = defaultLang;
+        if (typeof syntax === "undefined") {
+            syntax = defaultSyntax;
+        }
+        if (typeof language === "undefined") {
+            this.language = defaultLanguage;
         }
 
         // element definitions for the chosen language
-        if (typeof JSTB.lang[lang].elements !== "undefined") {
-            this.lang.elements = JSTB.lang[lang].elements;
+        if (typeof JSTB.lang[syntax].elements !== "undefined") {
+            this.lang.elements = JSTB.lang[syntax].elements;
         }
 
         this.editor = document.createElement('div');
@@ -108,17 +114,29 @@ JSTB.components = (function () {
         this.draw();
     };
 
+    /**
+     * Spacer object, just adds some spacing between objects
+     *
+     * @param {Object} element
+     * @constructor
+     */
     var Spacer = function (element) {
-        this.width = element.width;
+        this.width = element.width || null;
+        this.className = element.className || baseClass + '-button--spacer';
     };
 
+    /**
+     * Draws the actual spacer element.
+     *
+     * @returns {HTMLElement}
+     */
     Spacer.prototype.draw = function () {
         var span = document.createElement('span');
-//        if (this.id) {
-//            span.id = this.id;
-//        }
+        // add an &nbsp;
+        // FIXME this is silly, should be in the CSS using content: " ";
         span.appendChild(document.createTextNode(String.fromCharCode(160)));
-        span.className = 'jstb-button--spacer';
+        span.className = this.className;
+
         if (this.width) {
             span.style.marginRight = this.width+'px';
         }
@@ -126,13 +144,23 @@ JSTB.components = (function () {
         return span;
     };
 
+    /**
+     * Button object, generic constructor for the class
+     *
+     * @param {Object} element
+     * @constructor
+     */
     var Button = function (element) {
+        // FIXME wrong way to access the mode
         var mode = this.getMode();
 
-        this.title = JSTB.strings[title] || element.title || null;
-        this.fn = element.fn[mode] || function(){};
+        // translate the title
+        // TODO enable translation of titles
+//        this.title = JSTB.strings[element.title] || element.title || null;
+        this.title = element.title || null;
+        this.fn = element.fn[mode] || function () {};
 //        this.scope = scope || null;
-        this.className = element.className || 'jstb-button--button';
+        this.className = element.className || baseClass + '-button--button';
 
         // no action defined for the button
         if (typeof this.fn !== "function") {
@@ -143,14 +171,18 @@ JSTB.components = (function () {
         }
     };
 
-
+    /**
+     * Draws the actual button element.
+     *
+     * @returns {HTMLElement}
+     */
     Button.prototype.draw = function () {
+        var button = document.createElement('button'),
+            span = document.createElement('span');
+
 //        if (!this.scope) {
 //            return null;
 //        }
-
-        var button = document.createElement('button'),
-            span = document.createElement('span');
 
         span.appendChild(document.createTextNode(this.title));
 
@@ -181,8 +213,13 @@ JSTB.components = (function () {
         return button;
     };
 
+    /**
+     * Combo box (dropdown/select).
+     *
+     * @param {Object} element
+     * @constructor
+     */
     var Combo = function (element) {
-
         var mode = this.getMode(),
             list = element[mode].list,
             i;
@@ -205,19 +242,24 @@ JSTB.components = (function () {
         this.className = element.className || null;
     };
 
-
+    /**
+     * Draws the actual box for the toolbar
+     *
+     * @returns {*}
+     */
     Combo.prototype.draw = function() {
+        var select = document.createElement('select'),
+            context = this;
+
 //        if (!this.scope || !this.options) {
         if (!this.options) {
             return null;
         }
 
-        var select = document.createElement('select'),
-            context = this;
-
         if (this.className) {
             select.className = this.className;
         }
+
         select.title = this.title;
 
         for (var o in this.options) {
@@ -246,24 +288,6 @@ JSTB.components = (function () {
 
     JsToolbar.prototype = (function () {
         /*jshint validthis:true */
-
-        /**
-         * Factory for buttons to be drawn in the toolbar
-         *
-         * @param {String} buttonType the button type, either one of spacer|button|combo
-         * @param {String} element    the element definition
-         * @return {Object}
-         */
-        function drawButton(buttonType, element) {
-            var constr = buttonType,
-                tool;
-
-            if (typeof JSTB.components[constr] !== "function") {
-                throw new Error('Unable to find the definition of '+constr);
-            }
-
-            return new JSTB.components[constr](element);
-        }
 
         /**
          * getter for the mode
@@ -335,7 +359,7 @@ JSTB.components = (function () {
                 if (!disabled && typeof this[b.type] === 'function') {
 //                    tool = this[b.type](this.toolbarElements[i]); // get the right constructor for the toolbar element
                     // get the right constructor for the toolbar element
-                    tool = drawButton(b.type, this.toolbarElements[i]);
+                    tool = drawButton(this.toolbarElements[i]);
 
                     if (tool) {
                         newTool = tool.draw();
@@ -349,6 +373,22 @@ JSTB.components = (function () {
                     }
                 }
             }
+        }
+
+        /**
+         * Factory for buttons to be drawn in the toolbar
+         *
+         * @param {String} element    the element definition
+         * @return {Object}
+         */
+        function drawButton(element) {
+            var constr = element.type || 'Spacer';
+
+            if (typeof JSTB.components[constr] !== "function") {
+                throw new Error('Unable to initialise ' + constr + '. No constructor found.');
+            }
+
+            return new JSTB.components[constr](element);
         }
 
         // expose public objects/functions
