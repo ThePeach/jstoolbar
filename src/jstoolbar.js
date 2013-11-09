@@ -391,6 +391,30 @@ JSTB.components = (function () {
             return new JSTB.components[constr](element);
         }
 
+        /** Resizer
+         * TODO move into main prototype definition
+         -------------------------------------------------------- */
+        function resizeSetStartH() {
+            this.dragStartH = this.textarea.offsetHeight + 0;
+        }
+
+        function resizeDragStart(event) {
+            var This = this;
+            this.dragStartY = event.clientY;
+            this.resizeSetStartH();
+            document.addEventListener('mousemove', this.dragMoveHdlr=function(event){This.resizeDragMove(event);}, false);
+            document.addEventListener('mouseup', this.dragStopHdlr=function(event){This.resizeDragStop(event);}, false);
+        }
+
+        function resizeDragMove(event) {
+            this.textarea.style.height = (this.dragStartH+event.clientY-this.dragStartY)+'px';
+        }
+
+        function resizeDragStop(event) {
+            document.removeEventListener('mousemove', this.dragMoveHdlr, false);
+            document.removeEventListener('mouseup', this.dragStopHdlr, false);
+        }
+
         // expose public objects/functions
         return {
             setMode: setMode,
@@ -399,7 +423,11 @@ JSTB.components = (function () {
             drawButton: drawButton,
             Button: Button,
             Spacer: Spacer,
-            Combo: Combo
+            Combo: Combo,
+            resizeDragStop: resizeDragStop,
+            resizeDragMove: resizeDragMove,
+            resizeDragStart: resizeDragStart,
+            resizeSetStartH: resizeSetStartH
         };
     })();
 
@@ -640,23 +668,3 @@ JSTB.components = (function () {
 })();
 
 
-/** Resizer
- * TODO move into main prototype definition
--------------------------------------------------------- */
-jsToolBar.prototype.resizeSetStartH = function() {
-	this.dragStartH = this.textarea.offsetHeight + 0;
-};
-jsToolBar.prototype.resizeDragStart = function(event) {
-	var This = this;
-	this.dragStartY = event.clientY;
-	this.resizeSetStartH();
-	document.addEventListener('mousemove', this.dragMoveHdlr=function(event){This.resizeDragMove(event);}, false);
-	document.addEventListener('mouseup', this.dragStopHdlr=function(event){This.resizeDragStop(event);}, false);
-};
-jsToolBar.prototype.resizeDragMove = function(event) {
-	this.textarea.style.height = (this.dragStartH+event.clientY-this.dragStartY)+'px';
-};
-jsToolBar.prototype.resizeDragStop = function(event) {
-	document.removeEventListener('mousemove', this.dragMoveHdlr, false);
-	document.removeEventListener('mouseup', this.dragStopHdlr, false);
-};
