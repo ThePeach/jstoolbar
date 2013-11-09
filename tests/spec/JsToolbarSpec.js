@@ -7,7 +7,8 @@ describe('JsToolbar', function () {
         it('create a jstoolbar with a basic configuration', function () {
             var expectedLang = 'en',
                 expectedSyntax = 'markdown',
-                jsToolbar = new JSTB.components.JsToolbar({}, null, expectedSyntax, expectedLang);
+                textarea = document.getElementById('jsToolbar'),
+                jsToolbar = new JSTB.components.JsToolbar(textarea, null, expectedSyntax, expectedLang);
 
             expect(jsToolbar.getmode()).toEqual('wiki');
             expect(jsToolbar.language).toEqual('en');

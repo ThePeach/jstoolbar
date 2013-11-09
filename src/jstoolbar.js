@@ -42,16 +42,17 @@ JSTB.components = (function () {
 
     /**
      * Constructor for the JsToolbar
+     * TODO fix in case the textarea is an array of HTMLInputElements (eg taken from getElementsByClass()
      *
-     * @param {Object} textarea          the textarea the jsToolbar should be applied to
-     * @param {Array}  [toolbarElements] the elements used in the toolbar
-     * @param {String} [syntax]          the syntax to use, defaults to 'markdown'
-     * @param {String} [language]        the language to use, defaults to 'en'
+     * @param {HTMLElement} textarea          the textarea the jsToolbar should be applied to
+     * @param {Array}       [toolbarElements] the elements used in the toolbar
+     * @param {String}      [syntax]          the syntax to use, defaults to 'markdown'
+     * @param {String}      [language]        the language to use, defaults to 'en'
      * @returns {null}
      * @constructor
      */
     var JsToolbar = function (textarea, toolbarElements, syntax, language) {
-        if (!textarea || typeof document.createElement === "undefined" || (typeof document.selection === "undefined" && typeof textarea.setSelectionRange === "undefined") ) {
+        if (!textarea || typeof document.createElement === "undefined" || (typeof document.getSelection === "undefined" && typeof textarea.setSelectionRange === "undefined") ) {
             throw new Error('Unable to initialise the toolbar');
         }
 
@@ -78,7 +79,10 @@ JSTB.components = (function () {
 
         // element definitions for the chosen language
         if (typeof JSTB.lang[syntax].elements !== "undefined") {
-            this.lang.elements = JSTB.lang[syntax].elements;
+            this.lang = {
+                elements: JSTB.lang[syntax].elements
+            };
+//            this.lang.elements = JSTB.lang[syntax].elements;
         }
 
         this.editor = document.createElement('div');
@@ -384,7 +388,7 @@ JSTB.components = (function () {
         function drawButton(element) {
             var constr = element.type || 'Spacer';
 
-            if (typeof JSTB.components[constr] !== "function") {
+            if (typeof this[constr] !== "function") {
                 throw new Error('Unable to initialise ' + constr + '. No constructor found.');
             }
 
