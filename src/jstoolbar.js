@@ -32,7 +32,7 @@ JSTB.components = (function () {
          * Default toolbar buttons order.
          * @property {Array}
          */
-        defaultToolbarElements = [ 'strong', 'em', 'space', 'br', 'h1', 'h2', 'h3', 'space', 'ul', 'ol', 'bq', 'unbq', 'pre', 'space', 'link', 'email', 'styles' ],
+        defaultToolbarElements = [ 'strong', 'em', 'spacer', 'br', 'h1', 'h2', 'h3', 'spacer', 'ul', 'ol', 'bq', 'unbq', 'pre', 'spacer', 'link', 'email', 'styles' ],
         /**
          * The default language used for the toolbar.
          * @property {String}
@@ -63,16 +63,16 @@ JSTB.components = (function () {
         // toolbarElements to create
         this.toolbarElements = toolbarElements || defaultToolbarElements;
         // language to be used
+        this.language = language || defaultLanguage;
         this.context = null;
         // this object will be filled with shortcuts to the corresponding DOM elements tools.
         // FIXME not used anywhere
         this.toolNodes = {};
         // help link
         this.helpLink = '';
+        // syntax to be used, defaults to markdown
+        this.syntax = syntax || defaultSyntax;
 
-        if (typeof syntax === "undefined") {
-            syntax = defaultSyntax;
-        }
         if (typeof language === "undefined") {
             this.language = defaultLanguage;
         }
@@ -388,7 +388,7 @@ JSTB.components = (function () {
         function drawButton(element) {
             var constr = element.type || 'Spacer';
 
-            if (typeof this[constr] !== "function") {
+            if (typeof JSTB.components[constr] !== "function") {
                 throw new Error('Unable to initialise ' + constr + '. No constructor found.');
             }
 
@@ -667,7 +667,10 @@ JSTB.components = (function () {
 
     // expose public methods/objects
     return {
-        JsToolbar: JsToolbar
+        JsToolbar: JsToolbar,
+        Spacer: Spacer,
+        Button: Button,
+        Combo: Combo
     };
 })();
 

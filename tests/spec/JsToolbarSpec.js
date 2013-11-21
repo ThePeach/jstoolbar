@@ -10,7 +10,7 @@ describe('JsToolbar', function () {
                 textarea = document.getElementById('jsToolbar'),
                 jsToolbar = new JSTB.components.JsToolbar(textarea, null, expectedSyntax, expectedLang);
 
-            expect(jsToolbar.getmode()).toEqual('wiki');
+            expect(jsToolbar.getMode()).toEqual('wiki');
             expect(jsToolbar.language).toEqual('en');
             expect(jsToolbar.syntax).toEqual('markdown');
         });
