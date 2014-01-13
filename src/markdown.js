@@ -197,6 +197,7 @@ JSTB.lang.markdown = (function () {
         type: 'Combo',
         title: 'Text style',
         options: { 0: "Style:" },
+        // FIXME it should be fn.wiki: function ...
         wiki: {
             list: [0],
             fn: function (value) {

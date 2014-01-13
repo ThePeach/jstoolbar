@@ -1,5 +1,5 @@
 /*jshint bitwise:true, curly:true, eqeqeq:true, forin:true, noarg:true, noempty:true, nonew:true, undef:true, unused:true, strict:true, browser:true, laxbreak:true */
-
+/*global JSTB */
 /**
  * @projectDescription  This library contains the definition of the JSToolbar.
  *
@@ -12,7 +12,7 @@
  * @version 0.1
  */
 
-var JSTB = JSTB || {};
+JSTB.namespace('components');
 
 JSTB.components = (function () {
     'use strict';
@@ -42,7 +42,8 @@ JSTB.components = (function () {
 
     /**
      * Constructor for the JsToolbar
-     * TODO fix in case the textarea is an array of HTMLInputElements (eg taken from getElementsByClass()
+     * TODO fix in case the textarea is an array of HTMLInputElements
+     * e.g. taken from getElementsByClass()
      *
      * @param {HTMLElement} textarea          the textarea the jsToolbar should be applied to
      * @param {Array}       [toolbarElements] the elements used in the toolbar
@@ -52,11 +53,12 @@ JSTB.components = (function () {
      * @constructor
      */
     var JsToolbar = function (textarea, toolbarElements, syntax, language) {
+        // sanity checks, see if we are in the right place at the right time.
         if (!textarea || typeof document.createElement === "undefined" || (typeof document.getSelection === "undefined" && typeof textarea.setSelectionRange === "undefined") ) {
             throw new Error('Unable to initialise the toolbar');
         }
 
-        // the toolbar mode TODO useless? then get rid of this!
+        // the toolbar mode e.g. "wiki", is set when calling draw()
         this.mode = null;
         // the textarea the jstoolbar should be attached to
         this.textarea = textarea || null;
@@ -65,24 +67,16 @@ JSTB.components = (function () {
         // language to be used
         this.language = language || defaultLanguage;
         this.context = null;
-        // this object will be filled with shortcuts to the corresponding DOM elements tools.
-        // FIXME not used anywhere
-        this.toolNodes = {};
         // help link
         this.helpLink = '';
         // syntax to be used, defaults to markdown
         this.syntax = syntax || defaultSyntax;
-
-        if (typeof language === "undefined") {
-            this.language = defaultLanguage;
-        }
 
         // element definitions for the chosen language
         if (typeof JSTB.lang[syntax].elements !== "undefined") {
             this.lang = {
                 elements: JSTB.lang[syntax].elements
             };
-//            this.lang.elements = JSTB.lang[syntax].elements;
         }
 
         this.editor = document.createElement('div');
@@ -136,7 +130,7 @@ JSTB.components = (function () {
      */
     Spacer.prototype.draw = function () {
         var span = document.createElement('span');
-        // add an &nbsp;
+        // add an "space" character;
         // FIXME this is silly, should be in the CSS using content: " ";
         span.appendChild(document.createTextNode(String.fromCharCode(160)));
         span.className = this.className;
@@ -152,12 +146,10 @@ JSTB.components = (function () {
      * Button object, generic constructor for the class
      *
      * @param {Object} element
+     * @param {String} mode
      * @constructor
      */
-    var Button = function (element) {
-        // FIXME wrong way to access the mode
-        var mode = this.getMode();
-
+    var Button = function (element, mode) {
         // translate the title
         // TODO enable translation of titles
 //        this.title = JSTB.strings[element.title] || element.title || null;
@@ -221,11 +213,11 @@ JSTB.components = (function () {
      * Combo box (dropdown/select).
      *
      * @param {Object} element
+     * @param {String} mode
      * @constructor
      */
-    var Combo = function (element) {
-        var mode = this.getMode(),
-            list = element[mode].list,
+    var Combo = function (element, mode) {
+        var list = element[mode].list,
             i;
 
         this.options = {};
@@ -243,7 +235,7 @@ JSTB.components = (function () {
 
         this.title = element.title || null;
 //        this.scope = scope || null;
-        this.className = element.className || null;
+        this.className = element.className || baseClass + '-button--select';
     };
 
     /**
@@ -314,7 +306,7 @@ JSTB.components = (function () {
         /**
          * sets the mode and redraws the toolbar
          *
-         * @param {String} mode
+         * @param {String} mode e.g. 'wiki'
          */
         function switchMode(mode) {
             this.setMode(mode);
@@ -336,43 +328,35 @@ JSTB.components = (function () {
          * @param {String} [mode] the mode, defaults to wiki, optional.
          */
         function draw(mode) {
-            var i, b, tool, newTool;
+            var i, b, tool, newTool, disabled;
 
-            // FIXME this should be removed, it's useless?
             this.setMode(mode);
 
             // Empty toolbar
             while (this.toolbar.hasChildNodes()) {
                 this.toolbar.removeChild(this.toolbar.firstChild);
             }
-            // empty DOM shortcuts
-            // FIXME not used anywhere
-            this.toolNodes = {};
 
             // Draw toolbar elements
             for (i=0; i < this.toolbarElements.length; i++) {
                 // picks the definition of the element for the current language
                 b = this.lang.elements[this.toolbarElements[i]];
 
-                var disabled =
-                        typeof b.type === 'undefined'
-                        || b.type === ''
-                        || (typeof b.disabled !== 'undefined' && b.disabled)
-                        || (typeof b.context !== 'undefined' && b.context !== null && b.context !== this.context);
+                disabled =
+                    typeof b.type === 'undefined'
+                    || b.type === ''
+                    || (typeof b.disabled !== 'undefined' && b.disabled)
+                    || (typeof b.context !== 'undefined' && b.context !== null && b.context !== this.context);
 
                 if (!disabled && typeof this[b.type] === 'function') {
-//                    tool = this[b.type](this.toolbarElements[i]); // get the right constructor for the toolbar element
                     // get the right constructor for the toolbar element
-                    tool = drawButton(this.toolbarElements[i]);
+                    tool = this.drawButton(b);
 
                     if (tool) {
                         newTool = tool.draw();
                     }
 
                     if (newTool) {
-                        // record the DOM shortcut access for later use
-                        // FIXME remove toolNodes, it's not used anywhere
-                        this.toolNodes[this.toolbarElements[i]] = newTool;
                         this.toolbar.appendChild(newTool);
                     }
                 }
@@ -388,11 +372,11 @@ JSTB.components = (function () {
         function drawButton(element) {
             var constr = element.type || 'Spacer';
 
-            if (typeof JSTB.components[constr] !== "function") {
+            if (typeof this[constr] !== "function") {
                 throw new Error('Unable to initialise ' + constr + '. No constructor found.');
             }
 
-            return new JSTB.components[constr](element);
+            return new this[constr](element, this.getMode());
         }
 
         /** Resizer
