@@ -43,7 +43,9 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Strong',
         fn: {
-            wiki: function() { this.singleTag('**'); }
+            wiki: function() {
+                this.singleTag('**');
+            }
         }
     };
     // em
@@ -51,7 +53,9 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Italic',
         fn: {
-            wiki: function() { this.singleTag("_"); }
+            wiki: function() {
+                this.singleTag("_");
+            }
         }
     };
 
@@ -152,7 +156,9 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Preformatted text',
         fn: {
-            wiki: function() { this.encloseLineSelection('<pre>\n', '\n</pre>'); }
+            wiki: function() {
+                this.encloseLineSelection('<pre>\n', '\n</pre>');
+            }
         }
     };
     // link

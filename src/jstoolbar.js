@@ -85,7 +85,7 @@ JSTB.components = (function () {
         this.textarea.parentNode.insertBefore(this.editor, this.textarea);
         this.editor.appendChild(this.textarea);
 
-        /** @var {Object} the toolbar containing all buttons */
+        /** @var {DomElement} toolbar the toolbar containing all buttons */
         this.toolbar = document.createElement("div");
         this.toolbar.className = defaultClass;
         this.editor.parentNode.insertBefore(this.toolbar, this.editor);
@@ -108,8 +108,6 @@ JSTB.components = (function () {
 
             this.editor.parentNode.insertBefore(this.handle, this.editor.nextSibling);
         }
-
-        this.draw();
     };
 
     /**
@@ -147,15 +145,16 @@ JSTB.components = (function () {
      *
      * @param {Object} element
      * @param {String} mode
+     * @param {Object} scope the initial scope in order to access the drawing functions
      * @constructor
      */
-    var Button = function (element, mode) {
+    var Button = function (element, mode, scope) {
         // translate the title
         // TODO enable translation of titles
 //        this.title = JSTB.strings[element.title] || element.title || null;
         this.title = element.title || null;
         this.fn = element.fn[mode] || function () {};
-//        this.scope = scope || null;
+        this.scope = scope || null;
         this.className = element.className || baseClass + '-button--button';
 
         // no action defined for the button
@@ -174,11 +173,12 @@ JSTB.components = (function () {
      */
     Button.prototype.draw = function () {
         var button = document.createElement('button'),
-            span = document.createElement('span');
+            span = document.createElement('span'),
+            context = this;
 
-//        if (!this.scope) {
-//            return null;
-//        }
+        if (!this.scope) { // it's useless otherwise
+            return null;
+        }
 
         span.appendChild(document.createTextNode(this.title));
 
@@ -195,15 +195,15 @@ JSTB.components = (function () {
         }
 
         if (typeof this.fn === 'function') {
-            var context = this;
-            button.onclick = function() {
+
+            button.addEventListener('click', function() {
                 try {
                     context.fn.apply(context.scope, arguments);
                 }
                 catch (e) {
                 }
                 return false;
-            };
+            }, false);
         }
 
         return button;
@@ -247,8 +247,7 @@ JSTB.components = (function () {
         var select = document.createElement('select'),
             context = this;
 
-//        if (!this.scope || !this.options) {
-        if (!this.options) {
+        if (!this.scope && !this.options) {
             return null;
         }
 
@@ -342,6 +341,10 @@ JSTB.components = (function () {
                 // picks the definition of the element for the current language
                 b = this.lang.elements[this.toolbarElements[i]];
 
+                if (!b) {
+                    continue;
+                }
+
                 disabled =
                     typeof b.type === 'undefined'
                     || b.type === ''
@@ -353,6 +356,7 @@ JSTB.components = (function () {
                     tool = this.drawButton(b);
 
                     if (tool) {
+                        /** @var {HtmlElement} newTool */
                         newTool = tool.draw();
                     }
 
@@ -366,17 +370,249 @@ JSTB.components = (function () {
         /**
          * Factory for buttons to be drawn in the toolbar
          *
-         * @param {String} element    the element definition
-         * @return {Object}
+         * @param {Object} element the element definition
+         *
+         * @return {HtmlElement}
          */
         function drawButton(element) {
-            var constr = element.type || 'Spacer';
+            var constr = element.type || 'Spacer',
+                context = this;
 
             if (typeof this[constr] !== "function") {
                 throw new Error('Unable to initialise ' + constr + '. No constructor found.');
             }
 
-            return new this[constr](element, this.getMode());
+            return new this[constr](element, this.getMode(), context);
+        }
+
+        // drawing functions for the button
+        /**
+         * Adds a tag in the specific position, or wraps the selection.
+         *
+         * @param {String} startTag
+         * @param {String} endTag
+         */
+        function singleTag(startTag, endTag) {
+            startTag = startTag || null;
+            endTag = endTag || startTag;
+
+            if (!startTag || !endTag) {
+                return;
+            }
+
+            this.encloseSelection(startTag, endTag);
+        }
+
+        /**
+         * Encloses a line within a prefix and suffix.
+         *
+         * @param {String} prefix the prefix
+         * @param {String} suffix the suffix
+         * @param {Object} [fn]   a callback function
+         */
+        function encloseLineSelection(prefix, suffix, fn) {
+            var start, end, sel, scrollPos, subst, res;
+
+            prefix = prefix || '';
+            suffix = suffix || '';
+
+            this.textarea.focus();
+
+            if (typeof document.selection !== "undefined") {
+                sel = document.selection.createRange().text;
+            }
+            else if (typeof this.textarea.setSelectionRange !== "undefined") {
+                start = this.textarea.selectionStart;
+                end = this.textarea.selectionEnd;
+                scrollPos = this.textarea.scrollTop;
+                // go to the start of the line
+                start = this.textarea.value.substring(0, start).replace(/[^\r\n]*$/g,'').length;
+                // go to the end of the line
+                end = this.textarea.value.length - this.textarea.value.substring(end, this.textarea.value.length).replace(/^[^\r\n]*/, '').length;
+                sel = this.textarea.value.substring(start, end);
+            }
+
+            if (sel.match(/ $/)) { // exclude ending space char, if any
+                sel = sel.substring(0, sel.length - 1);
+                suffix = suffix + " ";
+            }
+
+            if (typeof fn  === 'function') {
+                res = (sel) ? fn.call(this,sel) : fn('');
+            }
+            else {
+                res = (sel) ? sel : '';
+            }
+
+            subst = prefix + res + suffix;
+
+            if (typeof document.selection !== "undefined") {
+                document.selection.createRange().text = subst;
+                var range = this.textarea.createTextRange();
+                range.collapse(false);
+                range.move('character', -suffix.length);
+                range.select();
+            }
+            else if (typeof this.textarea.setSelectionRange !== "undefined") {
+                this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
+                if (sel) {
+                    this.textarea.setSelectionRange(start + subst.length, start + subst.length);
+                } else {
+                    this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);
+                }
+
+                this.textarea.scrollTop = scrollPos;
+            }
+        }
+
+        /**
+         * Encloses a selection within a given prefix and suffix.
+         * TODO merge this function with encloseLineSelection
+         *
+         * @param {String} prefix
+         * @param {String} suffix
+         * @param {Function} fn a callback function
+         */
+        function encloseSelection(prefix, suffix, fn) {
+            var start, end, sel, scrollPos, subst, res;
+
+            prefix = prefix || '';
+            suffix = suffix || '';
+
+            this.textarea.focus();
+
+            if (typeof document.selection !== "undefined") {
+                sel = document.selection.createRange().text;
+            }
+            else if (typeof this.textarea.setSelectionRange !== "undefined") {
+                start = this.textarea.selectionStart;
+                end = this.textarea.selectionEnd;
+                scrollPos = this.textarea.scrollTop;
+                sel = this.textarea.value.substring(start, end);
+            }
+
+            if (sel.match(/ $/)) { // exclude ending space char, if any
+                sel = sel.substring(0, sel.length - 1);
+                suffix = suffix + " ";
+            }
+
+            if (typeof fn === 'function') {
+                res = (sel) ? fn.call(this,sel) : fn('');
+            }
+            else {
+                res = (sel) ? sel : '';
+            }
+
+            subst = prefix + res + suffix;
+
+            if (typeof document.selection !== "undefined") {
+                document.selection.createRange().text = subst;
+                var range = this.textarea.createTextRange();
+                range.collapse(false);
+                range.move('character', -suffix.length);
+                range.select();
+//			this.textarea.caretPos -= suffix.length;
+            }
+            else if (typeof this.textarea.setSelectionRange !== "undefined") {
+                this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
+                if (sel) {
+                    this.textarea.setSelectionRange(start + subst.length, start + subst.length);
+                }
+                else {
+                    this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);
+                }
+
+                this.textarea.scrollTop = scrollPos;
+            }
+        }
+
+        /**
+         * Strips the base url from a given string
+         *
+         * @param {String} url the url to strip
+         * @returns {String}
+         */
+        function stripBaseURL(url) {
+            if (this.base_url !== '') {
+                var pos = url.indexOf(this.base_url);
+                if (pos === 0) {
+                    url = url.substr(this.base_url.length);
+                }
+            }
+
+            return url;
+        }
+
+        /**
+         * inserts a single character at the current position
+         * and removes blank spaces before and after.
+         *
+         * @param {String} char     the character to insert
+         * @param {Object} textarea the textarea to get the information from
+         */
+        function singleCharacter(char, textarea) {
+            var pos = getCaretPosition(textarea),
+                content = textarea.value,
+                nextCharIsSpace = content.charAt(pos).match(/\s/),
+                prevCharIsSpace = content.charAt(pos-1).match(/\s/),
+                prevCharIsNewLine = content.charAt(pos-1).match(/\n/),
+                endPos = null, startPos = null,
+                i;
+
+            if (pos === 0 || pos === content.length || prevCharIsNewLine) {
+                textarea.focus();
+                return;
+            }
+
+            // find the next non-space character
+            if (nextCharIsSpace) {
+                for (i=pos+1; i<content.length && startPos === null; i+=1) {
+                    if (content.charAt(i).match(/\s/) === null) {
+                        startPos = i;
+                    }
+                }
+            }
+            // find the previous non-space character
+            if (prevCharIsSpace) {
+                for (i=pos-1; i>=0 && endPos === null; i-=1) {
+                    if (content.charAt(i).match(/\s/) === null) {
+                        endPos = i+1;
+                    }
+                }
+            }
+
+            textarea.value = content.substring(0, endPos || pos) + char + content.substring(startPos || pos);
+            textarea.focus();
+        }
+
+        /**
+         * Return the position of the caret within a text
+         *
+         * @param {Object} el the element
+         * @returns {Number}
+         */
+        function getCaretPosition(el) {
+            if (el.selectionStart) {
+                return el.selectionStart;
+            }
+
+            else if (document.selection) {
+                el.focus();
+
+                var r = document.selection.createRange(),
+                    re = el.createTextRange(),
+                    rc = re.duplicate();
+
+                if (r === null) {
+                    return 0;
+                }
+
+                re.moveToBookmark(r.getBookmark());
+                rc.setEndPoint('EndToStart', re);
+
+                return rc.text.length;
+            }
+            return 0;
         }
 
         /** Resizer
@@ -407,11 +643,18 @@ JSTB.components = (function () {
         return {
             setMode: setMode,
             getMode: getMode,
+            switchMode: switchMode,
             draw: draw,
             drawButton: drawButton,
             Button: Button,
             Spacer: Spacer,
             Combo: Combo,
+            singleTag: singleTag,
+            singleCharacter: singleCharacter,
+            encloseSelection: encloseSelection,
+            encloseLineSelection: encloseLineSelection,
+            stripBaseURL: stripBaseURL,
+            getCaretPosition: getCaretPosition,
             resizeDragStop: resizeDragStop,
             resizeDragMove: resizeDragMove,
             resizeDragStart: resizeDragStart,
@@ -419,235 +662,6 @@ JSTB.components = (function () {
         };
     })();
 
-    // generic internal methods
-    /**
-     * Adds a tag in the specific position, or wraps the selection.
-     *
-     * @param {String} startTag
-     * @param {String} endTag
-     */
-    function singleTag(startTag, endTag) {
-        startTag = startTag || null;
-        endTag = endTag || startTag;
-
-        if (!startTag || !endTag) {
-            return;
-        }
-
-        encloseSelection(startTag, endTag);
-    }
-
-    /**
-     * Encloses a line within a prefix and suffix.
-     *
-     * @param {String} prefix the prefix
-     * @param {String} suffix the suffix
-     * @param {Object} [fn]   a callback function
-     */
-    function encloseLineSelection(prefix, suffix, fn) {
-        var start, end, sel, scrollPos, subst, res;
-
-        prefix = prefix || '';
-        suffix = suffix || '';
-
-        this.textarea.focus();
-
-        if (typeof document.selection !== "undefined") {
-            sel = document.selection.createRange().text;
-        }
-        else if (typeof this.textarea.setSelectionRange !== "undefined") {
-            start = this.textarea.selectionStart;
-            end = this.textarea.selectionEnd;
-            scrollPos = this.textarea.scrollTop;
-            // go to the start of the line
-            start = this.textarea.value.substring(0, start).replace(/[^\r\n]*$/g,'').length;
-            // go to the end of the line
-            end = this.textarea.value.length - this.textarea.value.substring(end, this.textarea.value.length).replace(/^[^\r\n]*/, '').length;
-            sel = this.textarea.value.substring(start, end);
-        }
-
-        if (sel.match(/ $/)) { // exclude ending space char, if any
-            sel = sel.substring(0, sel.length - 1);
-            suffix = suffix + " ";
-        }
-
-        if (typeof fn  === 'function') {
-            res = (sel) ? fn.call(this,sel) : fn('');
-        }
-        else {
-            res = (sel) ? sel : '';
-        }
-
-        subst = prefix + res + suffix;
-
-        if (typeof document.selection !== "undefined") {
-            document.selection.createRange().text = subst;
-            var range = this.textarea.createTextRange();
-            range.collapse(false);
-            range.move('character', -suffix.length);
-            range.select();
-        }
-        else if (typeof this.textarea.setSelectionRange !== "undefined") {
-            this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
-            if (sel) {
-                this.textarea.setSelectionRange(start + subst.length, start + subst.length);
-            } else {
-                this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);
-            }
-
-            this.textarea.scrollTop = scrollPos;
-        }
-    }
-
-    /**
-     * Encloses a selection within a given prefix and suffix.
-     * TODO merge this function with encloseLineSelection
-     *
-     * @param {String} prefix
-     * @param {String} suffix
-     * @param {Function} fn a callback function
-     */
-    function encloseSelection(prefix, suffix, fn) {
-        var start, end, sel, scrollPos, subst, res;
-
-        prefix = prefix || '';
-        suffix = suffix || '';
-
-        this.textarea.focus();
-
-        if (typeof document.selection !== "undefined") {
-            sel = document.selection.createRange().text;
-        }
-        else if (typeof this.textarea.setSelectionRange !== "undefined") {
-            start = this.textarea.selectionStart;
-            end = this.textarea.selectionEnd;
-            scrollPos = this.textarea.scrollTop;
-            sel = this.textarea.value.substring(start, end);
-        }
-
-        if (sel.match(/ $/)) { // exclude ending space char, if any
-            sel = sel.substring(0, sel.length - 1);
-            suffix = suffix + " ";
-        }
-
-        if (typeof fn === 'function') {
-            res = (sel) ? fn.call(this,sel) : fn('');
-        }
-        else {
-            res = (sel) ? sel : '';
-        }
-
-        subst = prefix + res + suffix;
-
-        if (typeof document.selection !== "undefined") {
-            document.selection.createRange().text = subst;
-            var range = this.textarea.createTextRange();
-            range.collapse(false);
-            range.move('character', -suffix.length);
-            range.select();
-//			this.textarea.caretPos -= suffix.length;
-        }
-        else if (typeof this.textarea.setSelectionRange !== "undefined") {
-            this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
-            if (sel) {
-                this.textarea.setSelectionRange(start + subst.length, start + subst.length);
-            }
-            else {
-                this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);
-            }
-
-            this.textarea.scrollTop = scrollPos;
-        }
-    }
-
-    /**
-     * Strips the base url from a given string
-     *
-     * @param {String} url the url to strip
-     * @returns {String}
-     */
-    function stripBaseURL(url) {
-        if (this.base_url !== '') {
-            var pos = url.indexOf(this.base_url);
-            if (pos === 0) {
-                url = url.substr(this.base_url.length);
-            }
-        }
-
-        return url;
-    }
-
-    /**
-     * inserts a single character at the current position
-     * and removes blank spaces before and after.
-     *
-     * @param {String} char     the character to insert
-     * @param {Object} textarea the textarea to get the information from
-     */
-    function singleCharacter(char, textarea) {
-        var pos = getCaretPosition(textarea),
-            content = textarea.value,
-            nextCharIsSpace = content.charAt(pos).match(/\s/),
-            prevCharIsSpace = content.charAt(pos-1).match(/\s/),
-            prevCharIsNewLine = content.charAt(pos-1).match(/\n/),
-            endPos = null, startPos = null,
-            i;
-
-        if (pos === 0 || pos === content.length || prevCharIsNewLine) {
-            textarea.focus();
-            return;
-        }
-
-        // find the next non-space character
-        if (nextCharIsSpace) {
-            for (i=pos+1; i<content.length && startPos === null; i+=1) {
-                if (content.charAt(i).match(/\s/) === null) {
-                    startPos = i;
-                }
-            }
-        }
-        // find the previous non-space character
-        if (prevCharIsSpace) {
-            for (i=pos-1; i>=0 && endPos === null; i-=1) {
-                if (content.charAt(i).match(/\s/) === null) {
-                    endPos = i+1;
-                }
-            }
-        }
-
-        textarea.value = content.substring(0, endPos || pos) + char + content.substring(startPos || pos);
-        textarea.focus();
-    }
-
-    /**
-     * Return the position of the caret within a text
-     *
-     * @param {Object} el the element
-     * @returns {Number}
-     */
-    function getCaretPosition(el) {
-        if (el.selectionStart) {
-            return el.selectionStart;
-        }
-
-        else if (document.selection) {
-            el.focus();
-
-            var r = document.selection.createRange(),
-                re = el.createTextRange(),
-                rc = re.duplicate();
-
-            if (r === null) {
-                return 0;
-            }
-
-            re.moveToBookmark(r.getBookmark());
-            rc.setEndPoint('EndToStart', re);
-
-            return rc.text.length;
-        }
-        return 0;
-    }
 
     // expose public methods/objects
     return {
