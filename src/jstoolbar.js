@@ -24,7 +24,7 @@ JSTB.components = (function () {
     var defaultClass = 'jstoolbar',
         baseClass = 'jstb',
         /**
-         * I don't know what this is for. (also WTF naming)
+         * Mode, defaults to wiki
          * @property {String}
          */
         defaultMode = 'wiki',
@@ -49,7 +49,6 @@ JSTB.components = (function () {
      * @param {Array}       [toolbarElements] the elements used in the toolbar
      * @param {String}      [syntax]          the syntax to use, defaults to 'markdown'
      * @param {String}      [language]        the language to use, defaults to 'en'
-     * @returns {null}
      * @constructor
      */
     var JsToolbar = function (textarea, toolbarElements, syntax, language) {
@@ -322,6 +321,24 @@ JSTB.components = (function () {
         }
 
         /**
+         * Returns the base class
+         *
+         * @returns {string}
+         */
+        function getBaseClass() {
+            return baseClass;
+        }
+
+        /**
+         * Sets the base classname for the buttons
+         *
+         * @param {String} className
+         */
+        function setBaseClass(className) {
+            baseClass = className;
+        }
+
+        /**
          * The draw function acts as an initialisation function that acts on the DOM
          *
          * @param {String} [mode] the mode, defaults to wiki, optional.
@@ -356,7 +373,6 @@ JSTB.components = (function () {
                     tool = this.drawButton(b);
 
                     if (tool) {
-                        /** @var {HtmlElement} newTool */
                         newTool = tool.draw();
                     }
 
@@ -547,10 +563,10 @@ JSTB.components = (function () {
          * inserts a single character at the current position
          * and removes blank spaces before and after.
          *
-         * @param {String} char     the character to insert
-         * @param {Object} textarea the textarea to get the information from
+         * @param {String} character the character to insert
+         * @param {Object} textarea  the textarea to get the information from
          */
-        function singleCharacter(char, textarea) {
+        function singleCharacter(character, textarea) {
             var pos = getCaretPosition(textarea),
                 content = textarea.value,
                 nextCharIsSpace = content.charAt(pos).match(/\s/),
@@ -581,7 +597,7 @@ JSTB.components = (function () {
                 }
             }
 
-            textarea.value = content.substring(0, endPos || pos) + char + content.substring(startPos || pos);
+            textarea.value = content.substring(0, endPos || pos) + character + content.substring(startPos || pos);
             textarea.focus();
         }
 
@@ -644,6 +660,8 @@ JSTB.components = (function () {
             setMode: setMode,
             getMode: getMode,
             switchMode: switchMode,
+            getBaseClass: getBaseClass,
+            setBaseClass: setBaseClass,
             draw: draw,
             drawButton: drawButton,
             Button: Button,

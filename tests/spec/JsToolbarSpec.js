@@ -2,12 +2,12 @@
 /*global JSTB, describe, it, expect, beforeEach */
 describe('JSTB Components', function () {
     'use strict';
+    // internal vars used throughout the tests
+    var textarea = document.createElement('textarea');
+
+    textarea.id = 'jsToolbar';
 
     describe('JSToolbar', function () {
-        var textarea = document.createElement('textarea');
-
-        textarea.id = 'jsToolbar';
-
         beforeEach(function() {
             var testContainer = document.getElementById('testContainer');
 
@@ -20,24 +20,30 @@ describe('JSTB Components', function () {
             var expectedLang = 'en',
                 expectedSyntax = 'markdown',
                 jstbTextarea = document.getElementById('jsToolbar'),
-                jsToolbar = new JSTB.components.JsToolbar(jstbTextarea, null, expectedSyntax, expectedLang);
+                toolbarElements = [ 'string', 'styles', 'spacer' ],
+                jsToolbar = new JSTB.components.JsToolbar(jstbTextarea, toolbarElements, expectedSyntax, expectedLang);
 
+            expect(jsToolbar instanceof JSTB.components.JsToolbar).toBeTruthy();
             expect(jsToolbar.language).toEqual(expectedLang);
             expect(jsToolbar.syntax).toEqual(expectedSyntax);
+            expect(jsToolbar.toolbarElements).toEqual(toolbarElements);
+
+            // loose check the DOM structure has been instantiated
+            expect(jstbTextarea.parentNode.className).toEqual('jstEditor');
         });
 
-        it('initialises the elements based on the language', function () {
+        it('initialises the elements based on the mode', function () {
             var i,
                 expectedLang = 'en',
                 expectedSyntax = 'markdown',
                 jstbTextarea = document.getElementById('jsToolbar'),
-                modes = [ 'wiki' ],
+                expectedModes = [ 'wiki' ],
                 jsToolbar = new JSTB.components.JsToolbar(jstbTextarea, null, expectedSyntax, expectedLang);
 
-            for (i=0; i<modes.length; i++) {
-                jsToolbar.draw(modes[i]);
-                console.log(jsToolbar.getMode() + ' ' + modes[i]);
-                expect(jsToolbar.getMode()).toEqual(modes[i]);
+            for (i=0; i<expectedModes.length; i++) {
+                jsToolbar.draw(expectedModes[i]);
+
+                expect(jsToolbar.getMode()).toEqual(expectedModes[i]);
             }
         });
 
@@ -54,7 +60,7 @@ describe('JSTB Components', function () {
             expect(jsToolbar.toolbar.childNodes.length).toEqual(3);
 
             for (i=0; i < jsToolbar.toolbar.childNodes.length; i+=1) {
-                expect(jsToolbar.toolbar.childNodes[i].className).toEqual('jstb-button--' + buttonTypes[i]);
+                expect(jsToolbar.toolbar.childNodes[i].className).toEqual(jsToolbar.getBaseClass() + '-button--' + buttonTypes[i]);
             }
         });
 
@@ -67,6 +73,21 @@ describe('JSTB Components', function () {
 
             jsToolbar.draw();
             expect(jsToolbar.toolbar.hasChildNodes()).toBeFalsy();
+        });
+    });
+
+    describe('Elements', function () {
+
+        describe('Spacer', function () {
+            it('', function () {
+                var expectedLang = 'en',
+                    expectedSyntax = 'markdown',
+                    jstbTextarea = document.getElementById('jsToolbar'),
+                    buttons = [ 'a', 'b', 'c' ],
+                    jsToolbar = new JSTB.components.JsToolbar(jstbTextarea, buttons, expectedSyntax, expectedLang);
+
+                jsToolbar.setBaseClass('something');
+            });
         });
 
         it('allows to call drawButton to create new elements', function () {
