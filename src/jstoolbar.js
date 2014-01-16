@@ -22,7 +22,8 @@ JSTB.components = (function () {
          * @property {String}
          * */
     var defaultClass = 'jstoolbar',
-        baseClass = 'jstb',
+        baseClass = 'jstb-',
+        buttonBaseClass = baseClass + 'button--',
         /**
          * Mode, defaults to wiki
          * @property {String}
@@ -79,7 +80,7 @@ JSTB.components = (function () {
         }
 
         this.editor = document.createElement('div');
-        this.editor.className = 'jstEditor';
+        this.editor.className = baseClass+'editor';
 
         this.textarea.parentNode.insertBefore(this.editor, this.textarea);
         this.editor.appendChild(this.textarea);
@@ -117,7 +118,7 @@ JSTB.components = (function () {
      */
     var Spacer = function (element) {
         this.width = element.width || null;
-        this.className = element.className || baseClass + '-button--spacer';
+        this.className = element.className || buttonBaseClass + element.type.toLowerCase();
     };
 
     /**
@@ -154,7 +155,7 @@ JSTB.components = (function () {
         this.title = element.title || null;
         this.fn = element.fn[mode] || function () {};
         this.scope = scope || null;
-        this.className = element.className || baseClass + '-button--button';
+        this.className = element.className || buttonBaseClass + element.type.toLowerCase();
 
         // no action defined for the button
         if (typeof this.fn !== "function") {
@@ -234,7 +235,7 @@ JSTB.components = (function () {
 
         this.title = element.title || null;
 //        this.scope = scope || null;
-        this.className = element.className || baseClass + '-button--select';
+        this.className = element.className || buttonBaseClass + element.type.toLowerCase();
     };
 
     /**
@@ -336,6 +337,24 @@ JSTB.components = (function () {
          */
         function setBaseClass(className) {
             baseClass = className;
+        }
+
+        /**
+         * Returns the base class
+         *
+         * @returns {string}
+         */
+        function getButtonBaseClass() {
+            return buttonBaseClass;
+        }
+
+        /**
+         * Sets the base classname for the buttons
+         *
+         * @param {String} className
+         */
+        function setButtonBaseClass(className) {
+            buttonBaseClass = baseClass + className;
         }
 
         /**
@@ -662,6 +681,8 @@ JSTB.components = (function () {
             switchMode: switchMode,
             getBaseClass: getBaseClass,
             setBaseClass: setBaseClass,
+            getButtonBaseClass: getButtonBaseClass,
+            setButtonBaseClass: setButtonBaseClass,
             draw: draw,
             drawButton: drawButton,
             Button: Button,
