@@ -91,6 +91,24 @@ describe('JSTB Components', function () {
         });
     });
 
+    describe('Functions', function () {
+        describe('singleTag', function () {
+            it ('adds a single character at a specific position', function () {
+                var i, buttonElement, tool, jsToolbar,
+                    elements = JSTB.lang.markdown.elements,
+                    expectedLang = 'en',
+                    expectedSyntax = 'markdown',
+                    buttonElements = [ elements.spacer, elements.styles, elements.ol ];
+
+                jsToolbar = new JSTB.components.JsToolbar(textarea, null, expectedSyntax, expectedLang);
+
+                jsToolbar.singleTag('x','y');
+
+                expect(jsToolbar.textarea.value).toEqual('xy');
+            });
+        });
+    });
+
     describe('Elements', function () {
         it('allows to call drawButton to create new elements', function () {
             var i, buttonElement, tool, jsToolbar,
