@@ -204,9 +204,9 @@ JSTB.lang.markdown = (function () {
         title: 'Text style',
         options: { 0: "Style:" },
         // FIXME it should be fn.wiki: function ...
-        wiki: {
+        fn: {
             list: [0],
-            fn: function (value) {
+            wiki: function (value) {
                 this.encloseLineSelection('', '', function (str) {
                     // remove old tag:
                     str = str.replace(/\[style:[^\]]*\](.*)\[\/style\]/, "$1");
@@ -224,7 +224,7 @@ JSTB.lang.markdown = (function () {
 
             for (style in options) {
                 if (options.hasOwnProperty(style)) {
-                    this.wiki.list.push(style);
+                    this.fn.list.push(style);
                     this.options[style] = options[style];
                 }
             }

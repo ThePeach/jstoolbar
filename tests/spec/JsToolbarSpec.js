@@ -5,17 +5,16 @@ describe('JSTB Components', function () {
     // internal vars used throughout the tests
     var textarea;
 
+    beforeEach(function() {
+        var testContainer = document.getElementById('testContainer');
+
+        textarea = document.createElement('textarea');
+        textarea.id = 'jsToolbar';
+        testContainer.innerHTML = '';
+        testContainer.appendChild(textarea);
+    });
+
     describe('JSToolbar', function () {
-        beforeEach(function() {
-            var testContainer = document.getElementById('testContainer');
-
-            textarea = document.createElement('textarea');
-            textarea.id = 'jsToolbar';
-            testContainer.innerHTML = '';
-            testContainer.appendChild(textarea);
-        });
-
-
         it('is instantiated with a basic configuration', function () {
             var expectedLang = 'en',
                 expectedSyntax = 'markdown',
@@ -93,13 +92,23 @@ describe('JSTB Components', function () {
     });
 
     describe('Elements', function () {
-        beforeEach(function() {
-            var testContainer = document.getElementById('testContainer');
+        it('allows to call drawButton to create new elements', function () {
+            var i, buttonElement, tool, jsToolbar,
+                elements = JSTB.lang.markdown.elements,
+                expectedLang = 'en',
+                expectedSyntax = 'markdown',
+                buttonElements = [ elements.spacer, elements.styles, elements.ol ];
 
-            textarea = document.createElement('textarea');
-            textarea.id = 'jsToolbar';
-            testContainer.innerHTML = '';
-            testContainer.appendChild(textarea);
+            jsToolbar = new JSTB.components.JsToolbar(textarea, null, expectedSyntax, expectedLang);
+            jsToolbar.draw();
+
+            for (i=0; i < buttonElements.length; i+=1) {
+                buttonElement = buttonElements[i];
+                tool = jsToolbar.drawButton(buttonElement);
+
+                expect(tool instanceof JSTB.components[buttonElement.type]).toBeTruthy();
+                expect(tool.title).toEqual(buttonElement.title);
+            }
         });
 
         describe('Spacer', function () {
@@ -117,6 +126,7 @@ describe('JSTB Components', function () {
                 button = jsToolbar.drawButton(spacer);
                 element = button.draw();
 
+                expect(button.disabled).toBeFalsy();
                 expect(element instanceof HTMLElement).toBeTruthy();
                 expect(element.className).toEqual(baseClass + buttonClass + spacer.type.toLowerCase());
             });
@@ -137,6 +147,8 @@ describe('JSTB Components', function () {
                 button = jsToolbar.drawButton(strong);
                 element = button.draw();
 
+                expect(button.disabled).toBeFalsy();
+                expect(typeof button.fn === 'function').toBeTruthy();
                 expect(element instanceof HTMLElement).toBeTruthy();
                 expect(element.className).toEqual(baseClass + buttonClass + strong.type.toLowerCase());
             });
@@ -148,37 +160,20 @@ describe('JSTB Components', function () {
                     expectedSyntax = 'markdown',
                     baseClass = 'base-',
                     buttonClass = 'button--',
-                    style = JSTB.lang.markdown.elements.style,
+                    styles = JSTB.lang.markdown.elements.styles,
                     jsToolbar = new JSTB.components.JsToolbar(textarea, null, expectedSyntax, expectedLang),
                     button, element;
 
                 jsToolbar.setBaseClass(baseClass);
                 jsToolbar.setButtonBaseClass(buttonClass);
-                button = jsToolbar.drawButton(style);
+                button = jsToolbar.drawButton(styles);
                 element = button.draw();
 
+                expect(button.disabled).toBeFalsy();
+                expect(typeof button.fn === 'function').toBeTruthy();
                 expect(element instanceof HTMLElement).toBeTruthy();
-                expect(element.className).toEqual(baseClass + buttonClass + style.type.toLowerCase());
+                expect(element.className).toEqual(baseClass + buttonClass + styles.type.toLowerCase());
             });
-        });
-
-        it('allows to call drawButton to create new elements', function () {
-            var i, buttonElement, tool, jsToolbar,
-                elements = JSTB.lang.markdown.elements,
-                expectedLang = 'en',
-                expectedSyntax = 'markdown',
-                buttonElements = [ elements.spacer, elements.styles, elements.ol ];
-
-            jsToolbar = new JSTB.components.JsToolbar(textarea, null, expectedSyntax, expectedLang);
-            jsToolbar.draw();
-
-            for (i=0; i < buttonElements.length; i+=1) {
-                buttonElement = buttonElements[i];
-                tool = jsToolbar.drawButton(buttonElement);
-
-                expect(tool instanceof JSTB.components[buttonElement.type]).toBeTruthy();
-                expect(tool.title).toEqual(buttonElement.title);
-            }
         });
     });
 

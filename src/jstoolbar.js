@@ -149,18 +149,22 @@ JSTB.components = (function () {
      * @constructor
      */
     var Button = function (element, mode, scope) {
+        this.disabled = false;
+
         // translate the title
         // TODO enable translation of titles
 //        this.title = JSTB.strings[element.title] || element.title || null;
         this.title = element.title || null;
-        this.fn = element.fn[mode] || function () {};
-        this.scope = scope || null;
         this.className = element.className || buttonBaseClass + element.type.toLowerCase();
 
+        this.fn = element.fn[mode] || function () {};
+        this.scope = scope || null;
+
         // no action defined for the button
-        if (typeof this.fn !== "function") {
+        if (typeof element.fn[mode] !== "function") {
             this.disabled = true;
         }
+
         if (typeof element.icon !== 'undefined') {
             this.icon = element.icon;
         }
@@ -194,17 +198,14 @@ JSTB.components = (function () {
             button.style.backgroundImage = 'url('+this.icon+')';
         }
 
-        if (typeof this.fn === 'function') {
-
-            button.addEventListener('click', function() {
-                try {
-                    context.fn.apply(context.scope, arguments);
-                }
-                catch (e) {
-                }
-                return false;
-            }, false);
-        }
+        button.addEventListener('click', function() {
+            try {
+                context.fn.apply(context.scope, arguments);
+            }
+            catch (e) { // FIXME not really a good way to use this construct
+            }
+            return false;
+        }, false);
 
         return button;
     };
@@ -214,18 +215,24 @@ JSTB.components = (function () {
      *
      * @param {Object} element
      * @param {String} mode
+     * @param {Object} scope the initial scope in order to access the drawing functions
      * @constructor
      */
-    var Combo = function (element, mode) {
-        var list = element[mode].list,
+    var Combo = function (element, mode, scope) {
+        var list = element.fn.list,
             i;
 
-        this.options = {};
         this.disabled = false;
 
-        if (typeof element[mode].fn !== 'function' || list.length === 0) {
+        this.title = element.title || null;
+        this.className = element.className || buttonBaseClass + element.type.toLowerCase();
+
+        this.fn = element.fn[mode] || function () {};
+        this.scope = scope || null;
+        this.options = {};
+
+        if (typeof element.fn[mode] !== 'function' || list.length === 0) {
             this.disabled = true;
-            this.fn = element[mode].fn || function(){};
         }
         else {
             for (i=0; i < list.length; i++) {
@@ -233,15 +240,12 @@ JSTB.components = (function () {
             }
         }
 
-        this.title = element.title || null;
-//        this.scope = scope || null;
-        this.className = element.className || buttonBaseClass + element.type.toLowerCase();
     };
 
     /**
      * Draws the actual box for the toolbar
      *
-     * @returns {*}
+     * @returns {HTMLElement}
      */
     Combo.prototype.draw = function() {
         var select = document.createElement('select'),
@@ -267,16 +271,16 @@ JSTB.components = (function () {
             }
         }
 
-        select.onchange = function() {
+        select.addEventListener('change', function () {
             try {
                 context.fn.call(context.scope, this.value);
             }
             catch (e) {
-                window.alert(e);
+                window.alert(e); // FIXME still possibly not a great use of the catch
             }
 
             return false;
-        };
+        }, false);
 
         return select;
     };
@@ -365,6 +369,7 @@ JSTB.components = (function () {
         function draw(mode) {
             var i, b, tool, newTool, disabled;
 
+            // reset the mode
             this.setMode(mode);
 
             // Empty toolbar
@@ -417,7 +422,7 @@ JSTB.components = (function () {
                 throw new Error('Unable to initialise ' + constr + '. No constructor found.');
             }
 
-            return new this[constr](element, this.getMode(), context);
+            return new this[constr](element, this.getMode() || defaultMode, context);
         }
 
         // drawing functions for the button
@@ -441,9 +446,9 @@ JSTB.components = (function () {
         /**
          * Encloses a line within a prefix and suffix.
          *
-         * @param {String} prefix the prefix
-         * @param {String} suffix the suffix
-         * @param {Object} [fn]   a callback function
+         * @param {String}   prefix the prefix
+         * @param {String}   suffix the suffix
+         * @param {Function} [fn]   an optional callback function
          */
         function encloseLineSelection(prefix, suffix, fn) {
             var start, end, sel, scrollPos, subst, res;
