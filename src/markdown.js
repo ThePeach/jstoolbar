@@ -43,7 +43,7 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Strong',
         fn: {
-            wiki: function() {
+            wiki: function () {
                 this.singleTag('**');
             }
         }
@@ -53,7 +53,7 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Italic',
         fn: {
-            wiki: function() {
+            wiki: function () {
                 this.singleTag("_");
             }
         }
@@ -64,8 +64,8 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Heading 1',
         fn: {
-            wiki: function() {
-                this.encloseLineSelection('', '\n=============', function(str) {
+            wiki: function () {
+                this.encloseLineSelection('', '\n=============', function (str) {
                     str = str.replace(/=============/, '');
                     return str;
                 });
@@ -77,8 +77,8 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Heading 2',
         fn: {
-            wiki: function() {
-                this.encloseLineSelection('', '\n-------------',function(str) {
+            wiki: function () {
+                this.encloseLineSelection('', '\n-------------', function (str) {
                     str = str.replace(/-------------/, '');
                     return str;
                 });
@@ -90,8 +90,8 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Heading 3',
         fn: {
-            wiki: function() {
-                this.encloseLineSelection('### ', '',function(str) {
+            wiki: function () {
+                this.encloseLineSelection('### ', '', function (str) {
                     str = str.replace(/^###/, '');
                     return str;
                 });
@@ -104,8 +104,8 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Unordered list',
         fn: {
-            wiki: function() {
-                this.encloseLineSelection('','',function(str) {
+            wiki: function () {
+                this.encloseLineSelection('', '', function (str) {
                     str = str.replace(/\r/g,'');
                     return str.replace(/(\n|^)[#-]?\s*/g,"$1* ");
                 });
@@ -117,8 +117,8 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Ordered list',
         fn: {
-            wiki: function() {
-                this.encloseLineSelection('','',function(str) {
+            wiki: function () {
+                this.encloseLineSelection('', '', function (str) {
                     str = str.replace(/\r/g,'');
                     return str.replace(/(\n|^)[*-]?\s*/g,"$10. ");
                 });
@@ -128,12 +128,12 @@ JSTB.lang.markdown = (function () {
     // bq
     elements.bq = {
         type: 'Button',
-        title: 'Quote',
+        title: 'Block quote',
         fn: {
-            wiki: function() {
-                this.encloseLineSelection('','',function(str) {
+            wiki: function () {
+                this.encloseLineSelection('', '', function (str) {
                     str = str.replace(/\r/g,'');
-                    return str.replace(/(\n|^) *([^\n]*)/g,"$1> $2");
+                    return str.replace(/(\n|^) *([^\n]*)/g, "$1> $2");
                 });
             }
         }
@@ -143,10 +143,10 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Unquote',
         fn: {
-            wiki: function() {
-                this.encloseLineSelection('','',function(str) {
+            wiki: function () {
+                this.encloseLineSelection('','', function (str) {
                     str = str.replace(/\r/g,'');
-                    return str.replace(/(\n|^) *[>]? *([^\n]*)/g,"$1$2");
+                    return str.replace(/(\n|^) *[>]? *([^\n]*)/g, "$1$2");
                 });
             }
         }
@@ -156,7 +156,7 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Preformatted text',
         fn: {
-            wiki: function() {
+            wiki: function () {
                 this.encloseLineSelection('<pre>\n', '\n</pre>');
             }
         }
@@ -166,7 +166,7 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Link',
         fn: {
-            wiki: function() {
+            wiki: function () {
 
                 this.encloseSelection('', '', function(url) {
                     if (!url.length) {
@@ -186,9 +186,9 @@ JSTB.lang.markdown = (function () {
         type: 'Button',
         title: 'Email',
         fn: {
-            wiki: function() {
+            wiki: function () {
 
-                this.encloseSelection('', '', function(email) {
+                this.encloseSelection('', '', function (email) {
                     if (!email.length) {
                         email = window.prompt('E-mail');
                     }
@@ -230,26 +230,27 @@ JSTB.lang.markdown = (function () {
             }
         }
     };
-    // img TODO implement img Button
-//    elements.img = {
-//        type: 'Button',
-//        title: 'Image',
-//        fn: {
-//            wiki: function () {
-//                this.encloseSelection("!", "!")
-//            }
-//        }
-//    }
-    // help TODO implement help Button
-//    elements.help = {
-//        type: 'Button',
-//        title: 'Help',
-//        fn: {
-//            wiki: function () {
-//                window.open(this.help_link, '', 'resizable=yes, location=no, width=300, height=640, menubar=no, status=no, scrollbars=yes')
-//            }
-//        }
-//    }
+
+    elements.help = {
+        type: 'Button',
+        title: 'Help',
+        fn: {
+            wiki: function () {
+                window.open(this.help_link, '', 'resizable=yes, location=no, width=300, height=640, menubar=no, status=no, scrollbars=yes');
+            }
+        }
+    };
+
+    // img TODO not the right syntax for the img tag
+    elements.img = {
+        type: 'Button',
+        title: 'Image',
+        fn: {
+            wiki: function () {
+                this.encloseSelection("!", "!");
+            }
+        }
+    };
 
     (function init() {
 
@@ -258,6 +259,6 @@ JSTB.lang.markdown = (function () {
     })();
 
     return {
-        'elements': elements
+        elements: elements
     };
 })();
