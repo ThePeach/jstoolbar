@@ -73,9 +73,9 @@ JSTB.components = (function () {
         this.syntax = syntax || defaultSyntax;
 
         // element definitions for the chosen language
-        if (typeof JSTB.lang[syntax].elements !== "undefined") {
+        if (typeof JSTB.lang[this.syntax].elements !== "undefined") {
             this.lang = {
-                elements: JSTB.lang[syntax].elements
+                elements: JSTB.lang[this.syntax].elements
             };
         }
 
@@ -425,12 +425,106 @@ JSTB.components = (function () {
             return new this[constr](element, this.getMode() || defaultMode, context);
         }
 
-        // drawing functions for the button
+        // drawing functions for the buttons
+
+        /**
+         * Return the position of the caret within the provided element
+         *
+         * @param {HTMLInputElement} [el] the input
+         * @returns {Number}
+         */
+        function getCaretPosition(el) {
+            el = el || this.textarea;
+
+            if (el.selectionStart) {
+                return el.selectionStart;
+            }
+            else if (document.selection) {
+                el.focus();
+
+                var range = document.selection.createRange(),
+                    re = el.createTextRange(),
+                    rc = re.duplicate();
+
+                if (range === null) {
+                    return 0;
+                }
+
+                re.moveToBookmark(range.getBookmark());
+                rc.setEndPoint('EndToStart', re);
+
+                return rc.text.length;
+            }
+            return 0;
+        }
+
+        /**
+         * Places the caret at a specific position
+         *
+         * @param {number} caretPos the position to place the caret
+         * @param {HTMLInputElement} [el] the input
+         */
+        function setCaretPosition(caretPos, el) {
+            el = el || this.textarea;
+
+            if(el !== null) {
+                if(el.createTextRange) {
+                    var range = el.createTextRange();
+                    range.move('character', caretPos);
+                    range.select();
+                }
+                else {
+                    if(typeof el.selectionStart !== 'undefined') {
+                        el.focus();
+                        el.setSelectionRange(caretPos, caretPos);
+                    }
+                    else {
+                        el.focus();
+                    }
+                }
+            }
+        }
+
+        /**
+         * inserts a single character at the current position
+         * and removes blank spaces before and after.
+         *
+         * @param {String} character the character to insert
+         */
+        function singleCharacter(character) {
+            var pos = getCaretPosition(this.textarea),
+                content = this.textarea.value,
+                nextCharIsSpace = content.charAt(pos).match(/\s/),
+                prevCharIsSpace = content.charAt(pos-1).match(/\s/),
+                endPos = null, startPos = null,
+                i;
+
+            // find the next non-space character
+            if (nextCharIsSpace) {
+                for (i=pos+1; i<content.length && startPos === null; i+=1) {
+                    if (content.charAt(i).match(/\s/) === null) {
+                        startPos = i;
+                    }
+                }
+            }
+            // find the previous non-space character
+            if (prevCharIsSpace) {
+                for (i=pos-1; i>=0 && endPos === null; i-=1) {
+                    if (content.charAt(i).match(/\s/) === null) {
+                        endPos = i+1;
+                    }
+                }
+            }
+
+            this.textarea.value = content.substring(0, endPos || pos) + character + content.substring(startPos || pos);
+            this.textarea.focus();
+        }
+
         /**
          * Adds a tag in the specific position, or wraps the selection.
          *
          * @param {String} startTag
-         * @param {String} endTag
+         * @param {String} [endTag] if missing it will be used startTag instead
          */
         function singleTag(startTag, endTag) {
             startTag = startTag || null;
@@ -583,78 +677,6 @@ JSTB.components = (function () {
             return url;
         }
 
-        /**
-         * inserts a single character at the current position
-         * and removes blank spaces before and after.
-         *
-         * @param {String} character the character to insert
-         * @param {Object} textarea  the textarea to get the information from
-         */
-        function singleCharacter(character, textarea) {
-            var pos = getCaretPosition(textarea),
-                content = textarea.value,
-                nextCharIsSpace = content.charAt(pos).match(/\s/),
-                prevCharIsSpace = content.charAt(pos-1).match(/\s/),
-                prevCharIsNewLine = content.charAt(pos-1).match(/\n/),
-                endPos = null, startPos = null,
-                i;
-
-            if (pos === 0 || pos === content.length || prevCharIsNewLine) {
-                textarea.focus();
-                return;
-            }
-
-            // find the next non-space character
-            if (nextCharIsSpace) {
-                for (i=pos+1; i<content.length && startPos === null; i+=1) {
-                    if (content.charAt(i).match(/\s/) === null) {
-                        startPos = i;
-                    }
-                }
-            }
-            // find the previous non-space character
-            if (prevCharIsSpace) {
-                for (i=pos-1; i>=0 && endPos === null; i-=1) {
-                    if (content.charAt(i).match(/\s/) === null) {
-                        endPos = i+1;
-                    }
-                }
-            }
-
-            textarea.value = content.substring(0, endPos || pos) + character + content.substring(startPos || pos);
-            textarea.focus();
-        }
-
-        /**
-         * Return the position of the caret within a text
-         *
-         * @param {Object} el the element
-         * @returns {Number}
-         */
-        function getCaretPosition(el) {
-            if (el.selectionStart) {
-                return el.selectionStart;
-            }
-
-            else if (document.selection) {
-                el.focus();
-
-                var r = document.selection.createRange(),
-                    re = el.createTextRange(),
-                    rc = re.duplicate();
-
-                if (r === null) {
-                    return 0;
-                }
-
-                re.moveToBookmark(r.getBookmark());
-                rc.setEndPoint('EndToStart', re);
-
-                return rc.text.length;
-            }
-            return 0;
-        }
-
         /** Resizer
          * TODO move into main prototype definition
          -------------------------------------------------------- */
@@ -693,12 +715,13 @@ JSTB.components = (function () {
             Button: Button,
             Spacer: Spacer,
             Combo: Combo,
+            getCaretPosition: getCaretPosition,
+            setCaretPosition: setCaretPosition,
             singleTag: singleTag,
             singleCharacter: singleCharacter,
             encloseSelection: encloseSelection,
             encloseLineSelection: encloseLineSelection,
             stripBaseURL: stripBaseURL,
-            getCaretPosition: getCaretPosition,
             resizeDragStop: resizeDragStop,
             resizeDragMove: resizeDragMove,
             resizeDragStart: resizeDragStart,
