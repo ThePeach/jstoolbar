@@ -72,5 +72,6 @@ TODO
 ========
 
 - [ ] Refactor internal tag writing functions to be more flexible
+- [ ] Refactor CSS classes and icons
 - [ ] Test under IE (>=9)
 - [ ] Introduce language translations
