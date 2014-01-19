@@ -517,6 +517,7 @@ JSTB.components = (function () {
             }
 
             this.textarea.value = content.substring(0, endPos || pos) + character + content.substring(startPos || pos);
+            this.setCaretPosition(endPos || pos + character.length);
             this.textarea.focus();
         }
 
@@ -539,12 +540,13 @@ JSTB.components = (function () {
 
         /**
          * Encloses a line within a prefix and suffix.
+         * TODO merge this function with encloseSelection
          *
          * @param {String}   prefix the prefix
          * @param {String}   suffix the suffix
-         * @param {Function} [fn]   an optional callback function
+         * @param {Function} [callback]   an optional callback function
          */
-        function encloseLineSelection(prefix, suffix, fn) {
+        function encloseLineSelection(prefix, suffix, callback) {
             var start, end, sel, scrollPos, subst, res;
 
             prefix = prefix || '';
@@ -571,8 +573,8 @@ JSTB.components = (function () {
                 suffix = suffix + " ";
             }
 
-            if (typeof fn  === 'function') {
-                res = (sel) ? fn.call(this,sel) : fn('');
+            if (typeof callback  === 'function') {
+                res = (sel) ? callback.call(this,sel) : callback('');
             }
             else {
                 res = (sel) ? sel : '';
@@ -601,14 +603,13 @@ JSTB.components = (function () {
 
         /**
          * Encloses a selection within a given prefix and suffix.
-         * TODO merge this function with encloseLineSelection
          *
          * @param {String} prefix
          * @param {String} suffix
-         * @param {Function} fn a callback function
+         * @param {Function} [callback] a callback function
          */
-        function encloseSelection(prefix, suffix, fn) {
-            var start, end, sel, scrollPos, subst, res;
+        function encloseSelection(prefix, suffix, callback) {
+            var start, end, sel, scrollPos, wrappedOutput, res;
 
             prefix = prefix || '';
             suffix = suffix || '';
@@ -625,32 +626,34 @@ JSTB.components = (function () {
                 sel = this.textarea.value.substring(start, end);
             }
 
-            if (sel.match(/ $/)) { // exclude ending space char, if any
+            // trim space at the beginning and end
+            if (sel.match(/ $/)) {
                 sel = sel.substring(0, sel.length - 1);
                 suffix = suffix + " ";
             }
 
-            if (typeof fn === 'function') {
-                res = (sel) ? fn.call(this,sel) : fn('');
+            if (typeof callback === 'function') {
+                res = (sel) ? callback.call(this, sel) : callback('');
             }
             else {
                 res = (sel) ? sel : '';
             }
 
-            subst = prefix + res + suffix;
+            wrappedOutput = prefix + res + suffix;
 
             if (typeof document.selection !== "undefined") {
-                document.selection.createRange().text = subst;
+                document.selection.createRange().text = wrappedOutput;
                 var range = this.textarea.createTextRange();
                 range.collapse(false);
                 range.move('character', -suffix.length);
                 range.select();
-//			this.textarea.caretPos -= suffix.length;
             }
             else if (typeof this.textarea.setSelectionRange !== "undefined") {
-                this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
-                if (sel) {
-                    this.textarea.setSelectionRange(start + subst.length, start + subst.length);
+                // insert the new value
+                this.textarea.value = this.textarea.value.substring(0, start) + wrappedOutput + this.textarea.value.substring(end);
+
+                if (res) {
+                    this.textarea.setSelectionRange(start + wrappedOutput.length, start + wrappedOutput.length);
                 }
                 else {
                     this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);

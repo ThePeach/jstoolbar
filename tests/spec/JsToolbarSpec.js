@@ -65,8 +65,7 @@ describe('JSTB Components', function () {
         });
 
         it('allows to customise the class of any button', function () {
-            var i, buttonElement, tool, jsToolbar,
-                elements = JSTB.lang.markdown.elements,
+            var i, jsToolbar,
                 baseClass = 'base-',
                 buttonBaseClass = 'button--',
                 elementsConfig = [ 'spacer', 'ol', 'strong' ],
@@ -160,6 +159,27 @@ describe('JSTB Components', function () {
                     expect(jsToolbar.textarea.value).toEqual(value.substr(0, positions[i]) + character + value.substr(positions[i], value.length) );
                 }
             });
+
+            it('places the caret right after the inserted character', function () {
+                var jsToolbar = new JSTB.components.JsToolbar(textarea),
+                    character = '*',
+                    value = 'something',
+                    positions = [ 0, 3, value.length ],
+                    i;
+
+                // test without any content in the textarea
+                jsToolbar.singleCharacter(character);
+                expect(jsToolbar.getCaretPosition()).toEqual(character.length);
+
+                // test with some stupid content
+                for (i=0; i<positions.length; i+=1) {
+                    jsToolbar.textarea.value = value;
+                    jsToolbar.setCaretPosition(positions[i]);
+                    jsToolbar.singleCharacter(character);
+
+                    expect(jsToolbar.getCaretPosition()).toEqual(positions[i] + character.length);
+                }
+            });
         });
 
         describe('singleTag', function () {
@@ -195,11 +215,93 @@ describe('JSTB Components', function () {
                 jsToolbar.textarea.value = value;
                 // NOTE this won't work on IE < 9
                 if (typeof jsToolbar.textarea.setSelectionRange !== 'undefined') {
-                    jsToolbar.textarea.setSelectionRange(0, 3);
+                    jsToolbar.textarea.setSelectionRange(range[0], range[1]);
 
                     jsToolbar.singleTag(tag);
                     expect(jsToolbar.textarea.value).toEqual(value.substr(0, range[0]) + tag + value.substr(range[0], range[1]) + tag + value.substr(range[1], jsToolbar.textarea.value.length));
                 }
+            });
+        });
+
+        describe('encloseSelection', function () {
+            it('wraps a selection with supplied tags', function () {
+                var jsToolbar = new JSTB.components.JsToolbar(textarea),
+                    tag = '*',
+                    value = 'something',
+                    range = [ 0, value.length ];
+
+                jsToolbar.textarea.value = value;
+                // NOTE this won't work on IE < 9
+                if (typeof jsToolbar.textarea.setSelectionRange !== 'undefined') {
+                    jsToolbar.textarea.setSelectionRange(range[0], range[1]);
+
+                    jsToolbar.encloseSelection(tag, tag);
+
+                    expect(jsToolbar.textarea.value).toEqual(value.substr(0, range[0]) + tag + value.substr(range[0], range[1]) + tag + value.substr(range[1], jsToolbar.textarea.value.length));
+                }
+            });
+
+            it('executes a callback and wraps its output with supplied tags', function () {
+                var jsToolbar = new JSTB.components.JsToolbar(textarea),
+                    tag = [ '', '*',
+                        {
+                            first: '<pre>',
+                            last: '</pre>'
+                        }
+                    ],
+                    value = 'something',
+                    callback = function () { return value;},
+                    i, first, last;
+
+                for (i=0; i<tag.length; i+=1) {
+                    // reset the content of the textarea
+                    jsToolbar.textarea.value = '';
+
+                    if (typeof tag[i] === 'string') {
+                        first = tag[i];
+                        last = tag[i];
+                    }
+                    else {
+                        first = tag[i].first;
+                        last = tag[i].last;
+                    }
+
+                    jsToolbar.encloseSelection(first, last, callback);
+
+                    expect(jsToolbar.textarea.value).toEqual(first + value + last);
+                }
+            });
+
+            it('places the caret after the first tag if no selection or callback', function () {
+                var jsToolbar = new JSTB.components.JsToolbar(textarea),
+                    tag = '*';
+
+                jsToolbar.encloseSelection(tag, tag);
+                expect(jsToolbar.getCaretPosition()).toEqual(tag.length);
+            });
+
+            it('places the caret at the end of the newly placed content using a selected text', function () {
+                var jsToolbar = new JSTB.components.JsToolbar(textarea),
+                    tag = '*',
+                    value = 'something';
+
+                jsToolbar.textarea.value = value;
+                // NOTE this works only on IE > 9
+                if (typeof jsToolbar.textarea.setSelectionRange !== "undefined") {
+                    jsToolbar.textarea.setSelectionRange(0, value.length);
+                    jsToolbar.encloseSelection(tag, tag);
+                    expect(jsToolbar.getCaretPosition()).toEqual(tag.length * 2 + value.length);
+                }
+            });
+
+            it('places the caret at the end of the newly placed content returned by the callback', function () {
+                var jsToolbar = new JSTB.components.JsToolbar(textarea),
+                    tag = '*',
+                    value = 'something';
+
+                jsToolbar.encloseSelection(tag, tag, function () { return value; });
+
+                expect(jsToolbar.getCaretPosition()).toEqual(tag.length * 2 + value.length);
             });
         });
     });
