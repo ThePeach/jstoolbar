@@ -540,90 +540,48 @@ JSTB.components = (function () {
 
         /**
          * Encloses a line within a prefix and suffix.
-         * TODO merge this function with encloseSelection
          *
          * @param {String}   prefix the prefix
          * @param {String}   suffix the suffix
          * @param {Function} [callback]   an optional callback function
          */
         function encloseLineSelection(prefix, suffix, callback) {
-            var start, end, sel, scrollPos, subst, res;
-
-            prefix = prefix || '';
-            suffix = suffix || '';
-
-            this.textarea.focus();
-
-            if (typeof document.selection !== "undefined") {
-                sel = document.selection.createRange().text;
-            }
-            else if (typeof this.textarea.setSelectionRange !== "undefined") {
-                start = this.textarea.selectionStart;
-                end = this.textarea.selectionEnd;
-                scrollPos = this.textarea.scrollTop;
-                // go to the start of the line
-                start = this.textarea.value.substring(0, start).replace(/[^\r\n]*$/g,'').length;
-                // go to the end of the line
-                end = this.textarea.value.length - this.textarea.value.substring(end, this.textarea.value.length).replace(/^[^\r\n]*/, '').length;
-                sel = this.textarea.value.substring(start, end);
-            }
-
-            if (sel.match(/ $/)) { // exclude ending space char, if any
-                sel = sel.substring(0, sel.length - 1);
-                suffix = suffix + " ";
-            }
-
-            if (typeof callback  === 'function') {
-                res = (sel) ? callback.call(this,sel) : callback('');
-            }
-            else {
-                res = (sel) ? sel : '';
-            }
-
-            subst = prefix + res + suffix;
-
-            if (typeof document.selection !== "undefined") {
-                document.selection.createRange().text = subst;
-                var range = this.textarea.createTextRange();
-                range.collapse(false);
-                range.move('character', -suffix.length);
-                range.select();
-            }
-            else if (typeof this.textarea.setSelectionRange !== "undefined") {
-                this.textarea.value = this.textarea.value.substring(0, start) + subst + this.textarea.value.substring(end);
-                if (sel) {
-                    this.textarea.setSelectionRange(start + subst.length, start + subst.length);
-                } else {
-                    this.textarea.setSelectionRange(start + prefix.length, start + prefix.length);
-                }
-
-                this.textarea.scrollTop = scrollPos;
-            }
+            this.encloseSelection(prefix, suffix, callback, true);
         }
 
         /**
          * Encloses a selection within a given prefix and suffix.
          *
-         * @param {String} prefix
-         * @param {String} suffix
+         * @param {String}   prefix
+         * @param {String}   suffix
          * @param {Function} [callback] a callback function
+         * @param {Boolean}  [encloseFullLine] whether the tags should wrap the whole line
          */
-        function encloseSelection(prefix, suffix, callback) {
+        function encloseSelection(prefix, suffix, callback, encloseFullLine) {
             var start, end, sel, scrollPos, wrappedOutput, res;
 
             prefix = prefix || '';
             suffix = suffix || '';
+            encloseFullLine = encloseFullLine || false;
 
             this.textarea.focus();
 
-            if (typeof document.selection !== "undefined") {
-                sel = document.selection.createRange().text;
-            }
-            else if (typeof this.textarea.setSelectionRange !== "undefined") {
+            if (typeof this.textarea.setSelectionRange !== "undefined") {
+                scrollPos = this.textarea.scrollTop;
                 start = this.textarea.selectionStart;
                 end = this.textarea.selectionEnd;
-                scrollPos = this.textarea.scrollTop;
+
+                if (encloseFullLine) {
+                    // go to the start of the line
+                    start = this.textarea.value.substring(0, start).replace(/[^\r\n]*$/g,'').length;
+                    // go to the end of the line
+                    end = this.textarea.value.length - this.textarea.value.substring(end, this.textarea.value.length).replace(/^[^\r\n]*/, '').length;
+                }
+
                 sel = this.textarea.value.substring(start, end);
+            }
+            else if (typeof document.selection !== "undefined") {
+                sel = document.selection.createRange().text;
             }
 
             // trim space at the beginning and end
@@ -641,14 +599,7 @@ JSTB.components = (function () {
 
             wrappedOutput = prefix + res + suffix;
 
-            if (typeof document.selection !== "undefined") {
-                document.selection.createRange().text = wrappedOutput;
-                var range = this.textarea.createTextRange();
-                range.collapse(false);
-                range.move('character', -suffix.length);
-                range.select();
-            }
-            else if (typeof this.textarea.setSelectionRange !== "undefined") {
+            if (typeof this.textarea.setSelectionRange !== "undefined") {
                 // insert the new value
                 this.textarea.value = this.textarea.value.substring(0, start) + wrappedOutput + this.textarea.value.substring(end);
 
@@ -660,6 +611,13 @@ JSTB.components = (function () {
                 }
 
                 this.textarea.scrollTop = scrollPos;
+            }
+            else if (typeof document.selection !== "undefined") {
+                document.selection.createRange().text = wrappedOutput;
+                var range = this.textarea.createTextRange();
+                range.collapse(false);
+                range.move('character', -suffix.length);
+                range.select();
             }
         }
 
